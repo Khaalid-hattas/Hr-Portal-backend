@@ -11,6 +11,136 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
      <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+
+    <!-- Time Off – create-request modal styles (scoped; no shared CSS changed) -->
+    <style>
+        /* Modal backdrop */
+        .timeoff-modal-backdrop {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.55);
+            z-index: 1050;
+            align-items: center;
+            justify-content: center;
+        }
+        .timeoff-modal-backdrop.timeoff-modal--visible {
+            display: flex;
+        }
+
+        /* Modal box */
+        .timeoff-modal-box {
+            background: var(--bg-card, #1e293b);
+            color: var(--text-primary, #f1f5f9);
+            border: 1px solid var(--border-color, #334155);
+            border-radius: 12px;
+            padding: 2rem;
+            width: 100%;
+            max-width: 500px;
+            box-shadow: 0 24px 48px rgba(0,0,0,0.4);
+        }
+
+        .timeoff-modal-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 1.25rem;
+            color: var(--text-primary, #f1f5f9);
+        }
+
+        /* Form rows */
+        .timeoff-modal-field {
+            margin-bottom: 1rem;
+        }
+        .timeoff-modal-field label {
+            display: block;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.35rem;
+            color: var(--text-muted, #94a3b8);
+        }
+        .timeoff-modal-field select,
+        .timeoff-modal-field input,
+        .timeoff-modal-field textarea {
+            width: 100%;
+            padding: 0.5rem 0.75rem;
+            border-radius: 6px;
+            border: 1px solid var(--border-color, #334155);
+            background: var(--bg-input, #0f172a);
+            color: var(--text-primary, #f1f5f9);
+            font-size: 0.875rem;
+        }
+        .timeoff-modal-field select:focus,
+        .timeoff-modal-field input:focus,
+        .timeoff-modal-field textarea:focus {
+            outline: 2px solid #6366f1;
+        }
+
+        /* Error message */
+        .timeoff-modal-error {
+            font-size: 0.8rem;
+            color: #f87171;
+            margin-bottom: 0.75rem;
+            min-height: 1.1rem;
+        }
+
+        /* Footer buttons */
+        .timeoff-modal-footer {
+            display: flex;
+            gap: 0.75rem;
+            justify-content: flex-end;
+            margin-top: 1.25rem;
+        }
+        .timeoff-modal-btn-cancel {
+            padding: 0.45rem 1.1rem;
+            border-radius: 6px;
+            border: 1px solid var(--border-color, #334155);
+            background: transparent;
+            color: var(--text-muted, #94a3b8);
+            font-size: 0.875rem;
+            cursor: pointer;
+        }
+        .timeoff-modal-btn-cancel:hover {
+            background: var(--bg-hover, #1e293b);
+        }
+        .timeoff-modal-btn-submit {
+            padding: 0.45rem 1.25rem;
+            border-radius: 6px;
+            border: none;
+            background: #6366f1;
+            color: #fff;
+            font-size: 0.875rem;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .timeoff-modal-btn-submit:hover {
+            background: #4f46e5;
+        }
+        .timeoff-modal-btn-submit:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        /* New Request button in the page header */
+        .timeoff-new-request-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.45rem 1.1rem;
+            border-radius: 6px;
+            border: none;
+            background: #6366f1;
+            color: #fff;
+            font-size: 0.875rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 0.5rem;
+        }
+        .timeoff-new-request-btn:hover {
+            background: #4f46e5;
+        }
+    </style>
 </head>
 
 
@@ -28,18 +158,6 @@
                 <i class="bi bi-list fs-2"></i>
             </button>
         </header>
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -84,10 +202,7 @@
 
 
 
-
     </div><br>
-
-
 
 
 
@@ -99,8 +214,14 @@
 
             <!-- Page Header -->
             <div class="timeoff-page-header">
-                <h3 class="timeoff-page-title">Time Off Requests</h3>
-                <p id="timeoffHeaderSummary" class="timeoff-page-subtitle">Loading requests…</p>
+                <div>
+                    <h3 class="timeoff-page-title">Time Off Requests</h3>
+                    <p id="timeoffHeaderSummary" class="timeoff-page-subtitle">Loading requests…</p>
+                </div>
+                <!-- New Request button -->
+                <button id="openCreateRequestBtn" class="timeoff-new-request-btn">
+                    <i class="bi bi-plus-lg"></i> New Request
+                </button>
             </div>
 
 
@@ -229,11 +350,70 @@
 </section>
 
 
+<!-- =========================
+     Create Time-Off Request Modal
+========================= -->
+
+<div id="createRequestModal" class="timeoff-modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="createRequestModalTitle">
+    <div class="timeoff-modal-box">
+
+        <h5 class="timeoff-modal-title" id="createRequestModalTitle">New Time Off Request</h5>
+
+        <form id="createRequestForm" novalidate>
+
+            <div class="timeoff-modal-field">
+                <label for="createEmpSelect">Employee <span style="color:#f87171">*</span></label>
+                <select id="createEmpSelect" name="employee_id" required>
+                    <option value="">— Select Employee —</option>
+                </select>
+            </div>
+
+            <div class="timeoff-modal-field">
+                <label for="createLeaveType">Leave Type <span style="color:#f87171">*</span></label>
+                <select id="createLeaveType" name="leave_type" required>
+                    <option value="">— Select Type —</option>
+                    <option value="Annual Leave">Annual Leave</option>
+                    <option value="Sick Leave">Sick Leave</option>
+                    <option value="Maternity Leave">Maternity Leave</option>
+                    <option value="Paternity Leave">Paternity Leave</option>
+                    <option value="Study Leave">Study Leave</option>
+                    <option value="Casual Leave">Casual Leave</option>
+                    <option value="Unpaid Leave">Unpaid Leave</option>
+                    <option value="Compassionate Leave">Compassionate Leave</option>
+                </select>
+            </div>
+
+            <div class="timeoff-modal-field">
+                <label for="createStartDate">Start Date <span style="color:#f87171">*</span></label>
+                <input type="date" id="createStartDate" name="start_date" required>
+            </div>
+
+            <div class="timeoff-modal-field">
+                <label for="createEndDate">End Date <span style="color:#f87171">*</span></label>
+                <input type="date" id="createEndDate" name="end_date" required>
+            </div>
+
+            <div class="timeoff-modal-field">
+                <label for="createReason">Reason</label>
+                <textarea id="createReason" name="reason" rows="2" placeholder="Optional reason…"></textarea>
+            </div>
+
+            <div id="createRequestError" class="timeoff-modal-error"></div>
+
+            <div class="timeoff-modal-footer">
+                <button type="button" id="cancelCreateRequest" class="timeoff-modal-btn-cancel">Cancel</button>
+                <button type="submit" id="submitCreateRequest" class="timeoff-modal-btn-submit">Submit Request</button>
+            </div>
+
+        </form>
+
+    </div>
+</div>
+
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="TimeOff.js"></script>
 
 
 </body>
 </html>
-
-
