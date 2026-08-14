@@ -1,0 +1,911 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="theme.js"></script>
+    <title>Employee Review Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f4f6fa;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+
+        .wrapper {
+            display: flex;
+            width: 100%;
+            flex-direction: column;
+        }
+
+        /* Top Header Bar */
+        .main-header {
+            background-color: #243864;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 24px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        /* Offcanvas Sidebar Drawer Panel Customization */
+        .offcanvas-sidebar {
+            width: 350px !important;
+            background-color: #243864 !important;
+        }
+
+        .offcanvas-sidebar .nav-link {
+            color: #a3b1cc;
+            font-size: 16px;
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            border-radius: 8px;
+            transition: all 0.2s;
+            text-decoration: none;
+        }
+
+        .offcanvas-sidebar .nav-link:hover {
+            color: #ffffff;
+            background-color: rgba(255, 255, 255, 0.05);
+        }
+
+        .offcanvas-sidebar .nav-link.active {
+            background: #4e65f7;
+            color: #ffffff;
+        }
+
+        .brand-icon {
+            width: 32px;
+            height: 32px;
+            background: #3B82F6;
+            border-radius: 8px;
+        }
+
+        .avatar-circle {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: white;
+            flex-shrink: 0;
+        }
+
+        .card-custom {
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            background-color: #ffffff;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .employee-item {
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .employee-item:hover, .employee-item.active {
+            background-color: #edf2f9;
+        }
+
+        .btn-toggle-group .btn {
+            border-color: #e2e8f0;
+            color: #64748b;
+            background-color: #f8fafc;
+            transition: all 0.2s ease;
+        }
+
+        .btn-toggle-group .btn.active {
+            background-color: #4e65f7 !important;
+            color: white !important;
+            border-color: #4e65f7 !important;
+        }
+
+        .btn-primary-custom {
+            background-color: #4e65f7;
+            border-color: #4e65f7;
+            color: white;
+        }
+
+        .btn-primary-custom:hover {
+            background-color: #3b50df;
+            color: white;
+        }
+
+        .text-muted-sm {
+            font-size: 0.75rem;
+            color: #94a3b8;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .animate-entry {
+            animation: fadeIn 0.3s ease-out forwards;
+        }
+
+        @media (min-width: 992px) {
+            .sticky-sidebar {
+                position: sticky;
+                top: 24px; 
+                max-height: calc(100vh - 80px);
+                display: flex;
+                flex-direction: column;
+            }
+            #employeeListContainer {
+                max-height: none !important;
+                flex-grow: 1;
+            }
+        }
+
+        /* Fix positioning inside the sidebar button */
+        .toggle-btn {
+          width: 100%;
+          height: 45px;
+          border-radius: 6px;
+          border: none;
+          background: transparent;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: flex-start;
+          font-size: 16px;
+          transition: all 0.3s ease;
+          position: relative;
+          color: rgba(255, 255, 255, 0.7);
+        }
+
+        .toggle-btn:hover {
+          background: rgba(255, 255, 255, 0.1) !important;
+          color: #fff;
+        }
+
+        [data-bs-theme="dark"] .toggle-btn {
+          background: rgba(255, 255, 255, 0.05) !important;
+          color: #e0e0e0;
+        }
+
+        /* Adjust pseudo-element positioning to match alignment */
+        .toggle-btn::before, 
+        .toggle-btn::after {
+          left: 15px;
+          top: 50%;
+          transform: translateY(-50%);
+        }
+        .toggle-btn.dark-mode::before {
+          transform: translateY(-50%) rotate(180deg);
+        }
+        .toggle-btn.dark-mode::after {
+          transform: translateY(-50%) rotate(0deg);
+        }
+
+        /* Specific component overrides for your HR Portal Layout */
+        [data-bs-theme="dark"] .card-box {
+          background: #2d2d44 !important;
+          border-color: #3d3d54 !important;
+        }
+
+        [data-bs-theme="dark"] .text-dark,
+        [data-bs-theme="dark"] .header-title,
+        [data-bs-theme="dark"] .section-heading {
+          color: #e0e0e0 !important;
+        }
+
+        [data-bs-theme="dark"] .text-secondary,
+        [data-bs-theme="dark"] .text-muted {
+          color: #a0a0b8 !important;
+        }
+
+        [data-bs-theme="dark"] .border,
+        [data-bs-theme="dark"] .border-light {
+          border-color: #3d3d54 !important;
+        }
+
+        /* Force dark mode background across the entire layout wrapper and body container */
+        [data-bs-theme="dark"], 
+        [data-bs-theme="dark"] .wrapper,
+        [data-bs-theme="dark"] .main-body {
+            background-color: #1a1a2e !important;
+        }
+
+        /* Fix text contrast on the primary page title and date subtitle */
+        [data-bs-theme="dark"] h1.header-title {
+            color: #ffffff !important;
+        }
+
+        [data-bs-theme="dark"] p.text-secondary {
+            color: #a0a0b8 !important;
+        }
+
+        /* Ensure inline SVGs within metric icons retain their color or invert cleanly */
+        [data-bs-theme="dark"] .metric-icon svg {
+            filter: brightness(1.2);
+        }
+
+        /* ==========================================================================
+           Complete Layout Overrides for Dark Mode
+           ========================================================================== */
+
+        /* Global backgrounds & layouts */
+        [data-bs-theme="dark"], 
+        [data-bs-theme="dark"] .wrapper, 
+        [data-bs-theme="dark"] .main-body {
+            background-color: #1a1a2e !important;
+            color: #e0e0e0 !important;
+        }
+
+        /* Sidebar Dark Styling - Updated to match Main Nav Header */
+        [data-bs-theme="dark"] .offcanvas-sidebar {
+            background-color: #243864 !important;
+            border-right: 1px solid rgba(255, 255, 255, 0.1) !important;
+        }
+
+        /* Base Component Cards & Form Panels */
+        [data-bs-theme="dark"] .card-box,
+        [data-bs-theme="dark"] [class*="card"],
+        [data-bs-theme="dark"] .bg-white {
+            background-color: #2d2d44 !important;
+            border-color: #3d3d54 !important;
+            color: #e0e0e0 !important;
+        }
+
+        /* Inputs, Textareas, and Select Menus */
+        [data-bs-theme="dark"] .form-control,
+        [data-bs-theme="dark"] .form-select,
+        [data-bs-theme="dark"] textarea {
+            background-color: #1a1a2e !important;
+            border-color: #3d3d54 !important;
+            color: #ffffff !important;
+        }
+
+        [data-bs-theme="dark"] .form-control:focus,
+        [data-bs-theme="dark"] .form-select:focus {
+            background-color: #1a1a2e !important;
+            border-color: #27ae60 !important;
+            color: #ffffff !important;
+            box-shadow: 0 0 0 0.25rem rgba(39, 174, 96, 0.25) !important;
+        }
+
+        /* Global Typography Fixes */
+        [data-bs-theme="dark"] h1, [data-bs-theme="dark"] h2, [data-bs-theme="dark"] h3, 
+        [data-bs-theme="dark"] h4, [data-bs-theme="dark"] h5, [data-bs-theme="dark"] h6,
+        [data-bs-theme="dark"] .text-dark, [data-bs-theme="dark"] .fw-bold {
+            color: #ffffff !important;
+        }
+
+        [data-bs-theme="dark"] .text-muted, [data-bs-theme="dark"] .text-secondary, [data-bs-theme="dark"] small {
+            color: #a0a0b8 !important;
+        }
+
+        /* Global Border overrides */
+        [data-bs-theme="dark"] .border, 
+        [data-bs-theme="dark"] .border-top, 
+        [data-bs-theme="dark"] .border-bottom,
+        [data-bs-theme="dark"] .border-secondary-subtle {
+            border-color: #3d3d54 !important;
+        }
+
+        /* Button & Action Visibility fixes */
+        [data-bs-theme="dark"] .btn-outline-light {
+            color: #e0e0e0 !important;
+            border-color: #3d3d54 !important;
+        }
+
+        /* Fix background for active or custom buttons (like 'Save Entry' or 'Private') */
+        [data-bs-theme="dark"] .btn-primary, 
+        [data-bs-theme="dark"] .btn-custom {
+            background-color: #27ae60 !important;
+            border-color: #27ae60 !important;
+        }
+
+        /* ==========================================================================
+           FIXED: Strict Text Color Overrides for Dark Mode
+           ========================================================================== */
+        [data-bs-theme="dark"] {
+            color: #ffffff !important;
+        }
+
+        [data-bs-theme="dark"] h1, 
+        [data-bs-theme="dark"] h2, 
+        [data-bs-theme="dark"] h3, 
+        [data-bs-theme="dark"] h4, 
+        [data-bs-theme="dark"] h5, 
+        [data-bs-theme="dark"] h6,
+        [data-bs-theme="dark"] .text-dark,
+        [data-bs-theme="dark"] .fw-bold,
+        [data-bs-theme="dark"] #activeName {
+            color: #ffffff !important;
+        }
+
+        /* Subtle or secondary text formatting (Labels, sub-dates, counters) */
+        [data-bs-theme="dark"] .text-muted, 
+        [data-bs-theme="dark"] .text-secondary, 
+        [data-bs-theme="dark"] small,
+        [data-bs-theme="dark"] .form-label,
+        [data-bs-theme="dark"] .growth-text {
+            color: #a0a0b8 !important;
+        }
+
+        /* Form element input text configurations */
+        [data-bs-theme="dark"] .form-control,
+        [data-bs-theme="dark"] .form-select,
+        [data-bs-theme="dark"] textarea,
+        [data-bs-theme="dark"] select {
+            background-color: #1a1a2e !important;
+            border-color: #3d3d54 !important;
+            color: #ffffff !important;
+        }
+
+        /* Input field placeholder overrides */
+        [data-bs-theme="dark"] .form-control::placeholder,
+        [data-bs-theme="dark"] textarea::placeholder {
+            color: #6c757d !important;
+        }
+
+        /* ==========================================================================
+           Sidebar Flex-Layout Pinning Rules
+           ========================================================================== */
+        .offcanvas-sidebar {
+            display: flex !important;
+            flex-direction: column !important;
+            height: 100vh !important;
+        }
+
+        .sidebar-content-wrapper {
+            display: flex !important;
+            flex-direction: column !important;
+            justify-content: space-between !important;
+            flex-grow: 1 !important;
+            height: calc(100% - 60px) !important; /* Leaves precise room for the header */
+        }
+
+        .sidebar-footer {
+            margin-top: auto !important;
+            padding-top: 15px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* Ensure body * selector does not override layout heights */
+        [data-bs-theme="dark"] .sidebar-footer {
+            border-top-color: #3d3d54 !important;
+        }
+
+        /* ==========================================================================
+           FIX: Visibility Button Group Fixes for Dark Mode
+           ========================================================================== */
+        [data-bs-theme="dark"] .btn-toggle-group .btn {
+            background-color: #1a1a2e !important;
+            border-color: #3d3d54 !important;
+            color: #a0a0b8 !important; /* Muted text configuration for unselected visibility button */
+        }
+
+        [data-bs-theme="dark"] .btn-toggle-group .btn.active {
+            background-color: #4e65f7 !important;
+            border-color: #4e65f7 !important;
+            color: #ffffff !important; /* Forces visible text for the active visibility button */
+        }
+
+        /* Quick Visibility Patch for Dark Mode */
+        [data-bs-theme="dark"] .employee-item.active {
+            background-color: #3d3d54 !important; /* Distinct background for selected item */
+        }
+        [data-bs-theme="dark"] .employee-item:not(.active) {
+            background-color: transparent !important;
+        }
+        [data-bs-theme="dark"] .employee-item:not(.active) small,
+        [data-bs-theme="dark"] .employee-item:not(.active) .text-muted-sm {
+            color: #a0a0b8 !important; /* Keep secondary text readable */
+        }
+        [data-bs-theme="dark"] #historyContainer .card {
+            background-color: #2d2d44 !important;
+        }
+        /* Fixes the white-on-white text behavior inside history badges */
+        [data-bs-theme="dark"] #historyContainer span, 
+        [data-bs-theme="dark"] #historyContainer .badge {
+            background-color: rgba(255, 255, 255, 0.1) !important;
+            color: #ffffff !important;
+            border: 1px solid rgba(255, 255, 255, 0.2) !important;
+            padding: 4px 8px !important;
+            border-radius: 4px !important;
+        }
+    </style>
+</head>
+<body>
+
+<div class="wrapper">
+    <header class="main-header text-white">
+        <div class="d-flex align-items-center">
+            <div class="brand-icon me-2 d-flex align-items-center justify-content-center fw-bold text-white">HR</div>
+            <h5 class="m-0 fw-bold">ModernTech HR Portal</h5>
+        </div>
+        <button class="btn btn-outline-light border-0" type="button" data-bs-toggle="offcanvas" data-bs-target="#reviewAppSidebar" aria-controls="reviewAppSidebar">
+            <i class="bi bi-list fs-2"></i>
+        </button>
+    </header>
+
+    <div class="offcanvas offcanvas-start offcanvas-sidebar p-3" tabindex="-1" id="reviewAppSidebar" aria-labelledby="reviewAppSidebarLabel">
+        <div class="offcanvas-header text-white justify-content-between align-items-center mb-2">
+            <div class="d-flex align-items-center">
+                <div class="brand-icon me-2 d-flex align-items-center justify-content-center fw-bold text-white">HR</div>
+                <h5 class="m-0 fw-bold" id="reviewAppSidebarLabel">ModernTech HR Portal</h5>
+            </div>
+            <button type="button" class="btn-close btn-close-white text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        </div>
+        
+        <div class="sidebar-content-wrapper">
+            <nav class="nav flex-column gap-2 w-100">
+                <a class="nav-link" href="indexdash.html">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-3"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg> Dashboard
+                </a>
+                <a class="nav-link " href="Employees.html">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-3"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg> Employees
+                </a>
+                <a class="nav-link" href="Payroll.html">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-3"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg> Payroll
+                </a>
+                <a class="nav-link" href="TimeOff.html">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-3"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg> Time Off
+                </a>
+                <a class="nav-link" href="Attendance.html">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-3"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg> Attendance
+                </a>
+                <a class="nav-link" href="Reports.html">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-3"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg> Reports
+                </a>
+            </nav>
+
+            <div class="sidebar-footer w-100">
+                <button class="toggle-btn w-100 text-start d-flex align-items-center py-2 px-3 border-0 rounded" id="darkModeToggle">
+                    <span id="toggleText" style="margin-left: 100px;">Dark Mode</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="main-content container-fluid px-md-4 py-4">
+        <div class="row g-4">
+            
+            <div class="col-12 col-md-5 col-lg-4">
+                <div class="sticky-sidebar">
+                    
+                    <div class="card card-custom p-3 mb-3 border-start border-primary border-4">
+                        <h6 class="text-uppercase text-muted fw-bold mb-3" style="font-size: 0.8rem; letter-spacing: 0.5px;">Quick Actions</h6>
+                        <button class="btn btn-outline-primary btn-sm w-100 py-2 fw-semibold" data-bs-toggle="collapse" data-bs-target="#addEmployeeForm">
+                            <i class="bi bi-plus-lg me-1"></i> Add New Employee to List
+                        </button>
+                        
+                        <div class="collapse mt-3" id="addEmployeeForm">
+                            <div class="p-2 border rounded bg-body-tertiary">
+                                <div class="mb-2">
+                                    <label class="form-label small fw-bold text-secondary mb-1">Full Name</label>
+                                    <input type="text" id="newEmpName" class="form-control form-control-sm" placeholder="e.g., Sarah Mitchell">
+                                </div>
+                                <div class="mb-2">
+                                    <label class="form-label small fw-bold text-secondary mb-1">Position</label>
+                                    <input type="text" id="newEmpPos" class="form-control form-control-sm" placeholder="e.g., Senior Developer">
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label small fw-bold text-secondary mb-1">Department</label>
+                                    <select id="newEmpDept" class="form-select form-select-sm">
+                                        <option value="Engineering">Engineering</option>
+                                        <option value="Sales">Sales</option>
+                                        <option value="Marketing">Marketing</option>
+                                        <option value="HR">HR</option>
+                                        <option value="Customer Support">Customer Support</option>
+                                        <option value="QA">QA</option>
+                                    </select>
+                                </div>
+                                <button type="button" onclick="addNewEmployee()" class="btn btn-primary-custom btn-sm w-100">Add to System</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card card-custom mb-3 overflow-hidden d-flex flex-column">
+                        <div class="p-3 pb-2 d-flex justify-content-between align-items-center">
+                            <h6 class="text-uppercase text-muted fw-bold m-0" style="font-size: 0.8rem; letter-spacing: 0.5px;">Select Employee</h6>
+                            <input type="text" id="searchInput" class="form-control form-control-sm w-50" placeholder="Filter..." oninput="filterEmployeeList()">
+                        </div>
+                        <div id="employeeListContainer" class="list-group list-group-flush border-top overflow-auto" style="max-height: 400px;">
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="col-12 col-md-7 col-lg-8">
+                
+                <div class="card card-custom p-3 mb-3">
+                    <div class="d-flex align-items-center">
+                        <div id="activeAvatar" class="avatar-circle me-3" style="background-color: #6c757d;">--</div>
+                        <div>
+                            <h5 id="activeName" class="m-0 fw-bold" style="font-size: 1.2rem;">Select an Employee</h5>
+                            <p id="activeRole" class="m-0 text-muted small">No active profile chosen</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card card-custom mb-4">
+                    <div class="p-3 border-bottom">
+                        <h5 class="m-0 fw-bold" style="font-size: 1rem;">New Entry</h5>
+                    </div>
+                    <div class="p-3">
+                        <div class="row g-3 mb-3">
+                            <div class="col-12 col-sm-6">
+                                <label class="form-label small text-muted mb-1">Review Type</label>
+                                <select id="reviewType" class="form-select bg-body text-body">
+                                    <option>Check-in</option>
+                                    <option>Performance</option>
+                                    <option>Commendation</option>
+                                    <option>Disciplinary</option>
+                                </select>
+                            </div>
+                            <div class="col-12 col-sm-6">
+                                <label class="form-label small text-muted mb-1">Visibility</label>
+                                <div class="btn-group btn-toggle-group w-100" role="group" id="visibilityGroup">
+                                    <button type="button" class="btn active py-2 fw-semibold" id="btnPrivate" onclick="setFormVisibility('Private')">Private</button>
+                                    <button type="button" class="btn py-2 fw-semibold" id="btnShared" onclick="setFormVisibility('Shared')">Shared</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label small text-muted mb-1">Comment <span class="text-danger">*</span></label>
+                            <textarea id="reviewComment" class="form-control bg-body text-body" rows="4" placeholder="Notes from today's check-in — topics discussed, action items, employee feedback..." oninput="updateCharCount(this)"></textarea>
+                            <div id="charCount" class="text-end text-muted small mt-1">0 chars</div>
+                        </div>
+
+                        <!-- PAIN POINT IMPLEMENTATION: Link Word Documents from Shared Drive -->
+                        <div class="mb-3 p-3 border rounded bg-body-tertiary border-dashed" style="border-style: dashed !important;">
+                            <label class="form-label small text-muted mb-1 d-flex justify-content-between">
+                                <span><i class="bi bi-cloud-arrow-up-fill me-1 text-primary"></i> Link Review from Shared Drive</span>
+                                <span class="text-muted-sm text-end">Accepts .docx, .doc</span>
+                            </label>
+                            <div class="input-group">
+                                <input type="file" id="wordFileInput" class="form-control form-control-sm bg-body text-body" accept=".doc,.docx" onchange="evaluateFileStatus(this)">
+                            </div>
+                            <div id="fileUploadStatus" class="text-muted-sm mt-1 d-none animate-entry">
+                                <i class="bi bi-check-circle-fill text-success me-1"></i> Ready to import document contents into systemic record.
+                            </div>
+                        </div>
+
+                        <div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-3 mt-3">
+                            <span class="text-muted small">Logged as <strong>Admin User</strong><br><span class="text-muted-sm">2026/07/02</span></span>
+                            <button class="btn btn-primary-custom px-5 py-2 font-weight-bold" onclick="saveReviewEntry()">Save Entry</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-3 px-1">
+                    <span id="historyHeader" class="text-uppercase text-muted fw-bold" style="font-size: 0.85rem; letter-spacing: 0.5px;">History · 0 Entries</span>
+                </div>
+
+                <div id="historyContainer" class="d-flex flex-column gap-3">
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="dashboard.js"></script> 
+<script src="Reports.js"></script> 
+
+<!-- Per-Employee Permanent Data Management Engine -->
+<script>
+// System reads your actual employee roster and keeps them locked in safely
+    const fallbackEmployeesList = [
+        { id: "emp_1", name: "Sibongile Nkosi", role: "Development", dept: "Engineering" },
+        { id: "emp_2", name: "Lungile Moyo", role: "HR", dept: "HR" },
+        { id: "emp_3", name: "Thabo Molefe", role: "QA", dept: "Quality Assurance" },
+        { id: "emp_4", name: "Keshav Naidoo", role: "Sales", dept: "Sales" },
+        { id: "emp_5", name: "Zanele Khumalo", role: "Marketing", dept: "Marketing" },
+        { id: "emp_6", name: "Sipho Zulu", role: "Design", dept: "Design" },
+        { id: "emp_7", name: "Naledi Moeketsi", role: "Product", dept: "Management" },
+        { id: "emp_8", name: "Farai Gumbo", role: "Marketing", dept: "Marketing" },
+        { id: "emp_9", name: "Karabo Dlamini", role: "Finance", dept: "Finance" },
+        { id: "emp_10", name: "Fatima Patel", role: "Support", dept: "Support" }
+    ];
+
+    // Set the initial default selected person to your first real employee if nothing is cached yet
+    let currentSelectedEmployeeId = localStorage.getItem('hr_active_employee_id') || "emp_1";
+    let dynamicVisibilityState = 'Private';
+    
+
+    function getStoredEmployees() {
+        let emps = localStorage.getItem('hr_system_employees');
+        if(!emps) {
+            localStorage.setItem('hr_system_employees', JSON.stringify(fallbackEmployeesList));
+            return fallbackEmployeesList;
+        }
+        return JSON.parse(emps);
+    }
+
+    function getStoredReviews() {
+        return JSON.parse(localStorage.getItem('hr_employee_separated_reviews')) || {};
+    }
+
+    // Interactive Employee List Render Engine with Counter Badge Syncing
+    function paintEmployeeList() {
+        const container = document.getElementById('employeeListContainer');
+        if(!container) return;
+
+        const employees = getStoredEmployees();
+        const allReviews = getStoredReviews();
+        container.innerHTML = '';
+
+        employees.forEach(emp => {
+            const empReviews = allReviews[emp.id] || [];
+            const messageCount = empReviews.length;
+            const initials = emp.name.split(' ').map(n => n[0]).join('').toUpperCase();
+            const colorHash = ['#4e65f7', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'][emp.id.charCodeAt(emp.id.length-1) % 5];
+            const isActive = emp.id === currentSelectedEmployeeId ? 'active' : '';
+
+            const itemNode = document.createElement('div');
+            itemNode.className = `list-group-item employee-item p-3 d-flex align-items-center justify-content-between border-bottom ${isActive}`;
+            itemNode.setAttribute('onclick', `selectEmployeeProfile('${emp.id}')`);
+            itemNode.innerHTML = `
+                <div class="d-flex align-items-center overflow-hidden">
+                    <div class="avatar-circle me-3" style="background-color: ${colorHash}; width: 36px; height: 36px; font-size: 0.85rem;">${initials}</div>
+                    <div class="text-truncate">
+                        <h6 class="m-0 fw-bold ${isActive ? 'text-white' : 'text-dark'}" style="font-size: 0.95rem;">${emp.name}</h6>
+                        <small class="${isActive ? 'text-white-50' : 'text-muted'} text-muted-sm">${emp.role}</small>
+                    </div>
+                </div>
+                <span class="badge rounded-pill ${isActive ? 'bg-white text-primary' : 'bg-primary text-white'}" style="font-size: 0.75rem;">${messageCount}</span>
+            `;
+            container.appendChild(itemNode);
+        });
+    }
+
+    // Active Tab and Selection Pipeline State Switcher
+    window.selectEmployeeProfile = function(empId) {
+        currentSelectedEmployeeId = empId;
+        localStorage.setItem('hr_active_employee_id', empId);
+        
+        const employees = getStoredEmployees();
+        const activeEmp = employees.find(e => e.id === empId);
+
+        if(activeEmp) {
+            document.getElementById('activeName').innerText = activeEmp.name;
+            document.getElementById('activeRole').innerText = `${activeEmp.role} · ${activeEmp.dept}`;
+            
+            const initials = activeEmp.name.split(' ').map(n => n[0]).join('').toUpperCase();
+            const colorHash = ['#4e65f7', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'][activeEmp.id.charCodeAt(activeEmp.id.length-1) % 5];
+            
+            const mainAvatar = document.getElementById('activeAvatar');
+            mainAvatar.innerText = initials;
+            mainAvatar.style.backgroundColor = colorHash;
+
+            paintEmployeeList();
+            paintHistoryUI();
+        }
+    };
+
+    // Isolated Dynamic Review Rendering Pipeline
+    function paintHistoryUI() {
+        const container = document.getElementById('historyContainer');
+        const countHeader = document.getElementById('historyHeader');
+        if (!container) return;
+
+        if(!currentSelectedEmployeeId) {
+            countHeader.innerText = `History · 0 Entries`;
+            container.innerHTML = `<div class="text-muted small text-center py-4 bg-white rounded border">Select an employee to examine history context logs.</div>`;
+            return;
+        }
+
+        const allReviews = getStoredReviews();
+        const currentEmpReviews = allReviews[currentSelectedEmployeeId] || [];
+        
+        countHeader.innerText = `History · ${currentEmpReviews.length} Entries`;
+        container.innerHTML = '';
+
+        if(currentEmpReviews.length === 0) {
+            container.innerHTML = `<div class="text-muted small text-center py-4 bg-white rounded border">No historical entries recorded for this employee profile yet.</div>`;
+            return;
+        }
+
+        currentEmpReviews.forEach((item) => {
+            const entryNode = document.createElement('div');
+            entryNode.className = 'card card-custom p-3 animate-entry';
+            
+            let attachmentMarkup = '';
+            if (item.fileName) {
+                attachmentMarkup = `
+                    <div class="mt-2 p-2 bg-body-tertiary border rounded d-flex align-items-center" style="font-size: 0.85rem;">
+                        <i class="bi bi-file-earmark-word-fill text-primary me-2 fs-5"></i>
+                        <span class="text-truncate fw-medium small">${item.fileName}</span>
+                        <span class="text-muted-sm ms-2">(${item.fileSize})</span>
+                    </div>
+                `;
+            }
+
+            entryNode.innerHTML = `
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <div class="d-flex align-items-center gap-2 mb-1 flex-wrap">
+                            <span class="badge bg-secondary text-uppercase" style="font-size:0.7rem;">${item.type}</span>
+                            <span class="badge ${item.visibility === 'Private' ? 'bg-warning text-dark' : 'bg-info text-white'}" style="font-size:0.7rem;">${item.visibility}</span>
+                            <small class="text-muted-sm"><i class="bi bi-clock me-1"></i>${item.timestamp}</small>
+                        </div>
+                        <p class="m-0 text-body mt-2" style="white-space: pre-wrap; font-size: 0.95rem;">${item.comment}</p>
+                        ${attachmentMarkup}
+                    </div>
+                    <button class="btn btn-sm btn-outline-danger border-0 p-1 ms-2" onclick="removeHistoryItem('${item.id}')" title="Delete Comment">
+                        <i class="bi bi-trash3-fill fs-6"></i>
+                    </button>
+                </div>
+            `;
+            container.appendChild(entryNode);
+        });
+    }
+
+    // Comment Registration Handler
+    window.saveReviewEntry = function() {
+        if(!currentSelectedEmployeeId) {
+            alert("Please select an employee profile from the list before attempting to commit a log trace.");
+            return;
+        }
+
+        const typeSelect = document.getElementById('reviewType');
+        const commentArea = document.getElementById('reviewComment');
+        const fileSelector = document.getElementById('wordFileInput');
+
+        if (!commentArea || !commentArea.value.trim()) {
+            alert("Comment field is required.");
+            return;
+        }
+
+        let documentName = "";
+        let documentSize = "";
+
+        if (fileSelector && fileSelector.files && fileSelector.files[0]) {
+            const targetFile = fileSelector.files[0];
+            documentName = targetFile.name;
+            documentSize = (targetFile.size / 1024).toFixed(1) + " KB";
+        }
+
+        const compiledPayload = {
+            id: 'entry_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
+            type: typeSelect ? typeSelect.value : 'Check-in',
+            visibility: dynamicVisibilityState,
+            comment: commentArea.value.trim(),
+            fileName: documentName,
+            fileSize: documentSize,
+            timestamp: new Date().toLocaleString()
+        };
+
+        const allReviews = getStoredReviews();
+        if(!allReviews[currentSelectedEmployeeId]) {
+            allReviews[currentSelectedEmployeeId] = [];
+        }
+        
+        allReviews[currentSelectedEmployeeId].unshift(compiledPayload);
+        localStorage.setItem('hr_employee_separated_reviews', JSON.stringify(allReviews));
+
+        commentArea.value = '';
+        if(fileSelector) fileSelector.value = '';
+        const statusMsg = document.getElementById('fileUploadStatus');
+        if(statusMsg) statusMsg.classList.add('d-none');
+        updateCharCount(commentArea);
+
+        paintEmployeeList();
+        paintHistoryUI();
+    };
+
+    // Row Deletion Pipeline
+    window.removeHistoryItem = function(id) {
+        if(confirm("Are you sure you want to delete this comment? This action cannot be undone.")) {
+            const allReviews = getStoredReviews();
+            if(allReviews[currentSelectedEmployeeId]) {
+                allReviews[currentSelectedEmployeeId] = allReviews[currentSelectedEmployeeId].filter(entry => entry.id !== id);
+                localStorage.setItem('hr_employee_separated_reviews', JSON.stringify(allReviews));
+                
+                paintEmployeeList();
+                paintHistoryUI();
+            }
+        }
+    };
+
+    // Quick Creation of New Node Elements
+    window.addNewEmployee = function() {
+        const nameInp = document.getElementById('newEmpName');
+        const posInp = document.getElementById('newEmpPos');
+        const deptInp = document.getElementById('newEmpDept');
+
+        if(!nameInp || !nameInp.value.trim() || !posInp || !posInp.value.trim()) {
+            alert("Please complete all fields to introduce a new employee node record.");
+            return;
+        }
+
+        const uniqueId = 'emp_' + Date.now();
+        const newObj = {
+            id: uniqueId,
+            name: nameInp.value.trim(),
+            role: posInp.value.trim(),
+            dept: deptInp.value
+        };
+
+        const existing = getStoredEmployees();
+        existing.push(newObj);
+        localStorage.setItem('hr_system_employees', JSON.stringify(existing));
+
+        nameInp.value = '';
+        posInp.value = '';
+        
+        const colEl = document.getElementById('addEmployeeForm');
+        if(colEl) {
+            const bsCollapse = bootstrap.Collapse.getInstance(colEl) || new bootstrap.Collapse(colEl);
+            bsCollapse.hide();
+        }
+
+        paintEmployeeList();
+        selectEmployeeProfile(uniqueId);
+    };
+
+    // Live Sidebar Text Sorting Rules Engine
+    window.filterEmployeeList = function() {
+        const filterVal = document.getElementById('searchInput').value.toLowerCase();
+        const items = document.querySelectorAll('#employeeListContainer .employee-item');
+        
+        items.forEach(item => {
+            const textContent = item.innerText.toLowerCase();
+            if(textContent.includes(filterVal)) {
+                item.style.setProperty('display', 'flex', 'important');
+            } else {
+                item.style.setProperty('display', 'none', 'important');
+            }
+        });
+    };
+
+    window.updateCharCount = function(textarea) {
+        const countDisplay = document.getElementById('charCount');
+        if (countDisplay) countDisplay.innerText = `${textarea.value.length} chars`;
+    };
+
+    window.setFormVisibility = function(state) {
+        dynamicVisibilityState = state;
+        const pBtn = document.getElementById('btnPrivate');
+        const sBtn = document.getElementById('btnShared');
+        if(state === 'Private') {
+            pBtn.classList.add('active');
+            sBtn.classList.remove('active');
+        } else {
+            sBtn.classList.add('active');
+            pBtn.classList.remove('active');
+        }
+    };
+
+    window.evaluateFileStatus = function(element) {
+        const statusMsg = document.getElementById('fileUploadStatus');
+        if (element.files && element.files[0]) {
+            statusMsg.classList.remove('d-none');
+        } else {
+            statusMsg.classList.add('d-none');
+        }
+    };
+
+    // Lifecycle OnLoad Event Hooks
+    document.addEventListener("DOMContentLoaded", function() {
+        paintEmployeeList();
+        
+        const defaultList = getStoredEmployees();
+        if(defaultList.length > 0) {
+            // Checks if a previously active profile ID exists to prevent resetting back to index 0 on refresh
+            const targetId = currentSelectedEmployeeId && defaultList.some(e => e.id === currentSelectedEmployeeId) 
+                ? currentSelectedEmployeeId 
+                : defaultList[0].id;
+            selectEmployeeProfile(targetId);
+        } else {
+            paintHistoryUI();
+        }
+    });
+</script>
+</body>
+</html>
