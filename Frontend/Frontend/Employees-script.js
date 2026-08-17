@@ -14,7 +14,7 @@ async function loadEmployees() {
 
     try {
 
-        const response = await fetch("./data/employee_info.json");
+        const response = await fetch("./employee_info.json");
 
         if (!response.ok)
             throw new Error("Unable to load employees.");
