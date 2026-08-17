@@ -1,6 +1,5 @@
-const state = {
+﻿const state = {
     requests: [],
-    employees: []
 };
 
 // Calendar starts on the first month that contains leave requests
@@ -10,7 +9,6 @@ let currentYear  = new Date().getFullYear();
 document.addEventListener("DOMContentLoaded", () => {
     setupSidebarControls();
     setupThemeToggle();
-    setupCreateModal();
     loadTimeOffData();
 });
 
@@ -55,18 +53,11 @@ function setupThemeToggle() {
 
 }
 
-// ─── Load all Time Off data from MySQL via the API ────────────────────────────
+// â”€â”€â”€ Load all Time Off data from MySQL via the API â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 async function loadTimeOffData() {
 
     try {
-
-        // Load employees (for the create-request dropdown)
-        const empRes = await fetch("http://localhost:3000/api/employees");
-        if (empRes.ok) {
-            state.employees = await empRes.json();
-            populateEmployeeDropdown(state.employees);
-        }
 
         const response = await fetch("http://localhost:3000/api/timeoff");
 
@@ -76,7 +67,7 @@ async function loadTimeOffData() {
 
         const rows = await response.json();
 
-        // Map each DB row — employee_name and department now come from the JOIN
+        // Map each DB row â€” employee_name and department now come from the JOIN
         state.requests = rows.map(row => ({
 
             // request_id is the stable DB primary key; used for PATCH/DELETE calls
@@ -128,7 +119,7 @@ async function loadTimeOffData() {
 
 }
 
-// ─── Render summary counters + requests table ─────────────────────────────────
+// â”€â”€â”€ Render summary counters + requests table â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function render() {
 
@@ -150,7 +141,7 @@ function render() {
     document.getElementById("deniedCount").textContent   = deniedCount;
 
     document.getElementById("timeoffHeaderSummary").textContent =
-        `${pendingCount} pending review • ${state.requests.length} total requests`;
+        `${pendingCount} pending review â€¢ ${state.requests.length} total requests`;
 
     renderRequests();
 
@@ -281,7 +272,7 @@ Deny
 class="timeoff-btn-revert"
 data-id="${request.id}">
 
-↩ Revert
+â†© Revert
 
 </button>
 
@@ -295,7 +286,7 @@ data-id="${request.id}">
 
 `).join("");
 
-    // Approve button — PATCH status to Approved then reload from API
+    // Approve button â€” PATCH status to Approved then reload from API
     document.querySelectorAll(".timeoff-btn-approve").forEach(btn => {
 
         btn.onclick = async () => {
@@ -328,7 +319,7 @@ data-id="${request.id}">
 
     });
 
-    // Deny button — PATCH status to Rejected then reload from API
+    // Deny button â€” PATCH status to Rejected then reload from API
     document.querySelectorAll(".timeoff-btn-deny").forEach(btn => {
 
         btn.onclick = async () => {
@@ -361,7 +352,7 @@ data-id="${request.id}">
 
     });
 
-    // Revert button — PATCH status back to Pending then reload from API
+    // Revert button â€” PATCH status back to Pending then reload from API
     document.querySelectorAll(".timeoff-btn-revert").forEach(btn => {
 
         btn.onclick = async () => {
@@ -396,121 +387,6 @@ data-id="${request.id}">
 
 }
 
-// ─── Create-request modal ─────────────────────────────────────────────────────
-
-function setupCreateModal() {
-
-    const openBtn   = document.getElementById("openCreateRequestBtn");
-    const modal     = document.getElementById("createRequestModal");
-    const cancelBtn = document.getElementById("cancelCreateRequest");
-    const form      = document.getElementById("createRequestForm");
-    const errorDiv  = document.getElementById("createRequestError");
-
-    if (!openBtn || !modal || !cancelBtn || !form) return;
-
-    openBtn.addEventListener("click", () => {
-        modal.classList.add("timeoff-modal--visible");
-        if (errorDiv) errorDiv.textContent = "";
-        form.reset();
-    });
-
-    cancelBtn.addEventListener("click", () => {
-        modal.classList.remove("timeoff-modal--visible");
-    });
-
-    // Close on backdrop click
-    modal.addEventListener("click", (e) => {
-        if (e.target === modal) {
-            modal.classList.remove("timeoff-modal--visible");
-        }
-    });
-
-    form.addEventListener("submit", async (e) => {
-        e.preventDefault();
-        await submitCreateRequest(form, modal, errorDiv);
-    });
-
-}
-
-function populateEmployeeDropdown(employees) {
-
-    const select = document.getElementById("createEmpSelect");
-    if (!select) return;
-
-    // Keep the placeholder option, replace the rest
-    select.innerHTML = `<option value="">— Select Employee —</option>`;
-
-    employees.forEach(emp => {
-        const option = document.createElement("option");
-        option.value       = emp.employee_id;
-        option.textContent = `${emp.name} (${emp.department})`;
-        select.appendChild(option);
-    });
-
-}
-
-async function submitCreateRequest(form, modal, errorDiv) {
-
-    const employee_id = form.querySelector("#createEmpSelect").value;
-    const leave_type  = form.querySelector("#createLeaveType").value;
-    const start_date  = form.querySelector("#createStartDate").value;
-    const end_date    = form.querySelector("#createEndDate").value;
-    const reason      = form.querySelector("#createReason").value.trim();
-
-    // Client-side validation before hitting the server
-    if (!employee_id) {
-        if (errorDiv) errorDiv.textContent = "Please select an employee.";
-        return;
-    }
-    if (!leave_type) {
-        if (errorDiv) errorDiv.textContent = "Please select a leave type.";
-        return;
-    }
-    if (!start_date) {
-        if (errorDiv) errorDiv.textContent = "Start date is required.";
-        return;
-    }
-    if (!end_date) {
-        if (errorDiv) errorDiv.textContent = "End date is required.";
-        return;
-    }
-    if (new Date(end_date) < new Date(start_date)) {
-        if (errorDiv) errorDiv.textContent = "End date cannot be before start date.";
-        return;
-    }
-
-    const submitBtn = form.querySelector("#submitCreateRequest");
-    if (submitBtn) submitBtn.disabled = true;
-
-    try {
-
-        const res = await fetch("http://localhost:3000/api/timeoff", {
-            method:  "POST",
-            headers: { "Content-Type": "application/json" },
-            body:    JSON.stringify({ employee_id, leave_type, start_date, end_date, reason: reason || null })
-        });
-
-        const data = await res.json();
-
-        if (!res.ok) {
-            if (errorDiv) errorDiv.textContent = data.error || "Failed to create request.";
-            return;
-        }
-
-        // Success — close modal and reload data from MySQL
-        modal.classList.remove("timeoff-modal--visible");
-        await loadTimeOffData();
-
-    } catch (err) {
-        console.error("submitCreateRequest:", err);
-        if (errorDiv) errorDiv.textContent = "Network error — please try again.";
-    } finally {
-        if (submitBtn) submitBtn.disabled = false;
-    }
-
-}
-
-// ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function getStatusClass(status) {
 
@@ -586,7 +462,7 @@ function escapeHtml(value) {
 
 }
 
-// ─── Calendar ─────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Calendar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function renderCalendar() {
 
