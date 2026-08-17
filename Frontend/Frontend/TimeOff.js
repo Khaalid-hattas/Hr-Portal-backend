@@ -1,4 +1,4 @@
-﻿const state = {
+const state = {
     requests: [],
 };
 
@@ -53,7 +53,7 @@ function setupThemeToggle() {
 
 }
 
-// â”€â”€â”€ Load all Time Off data from MySQL via the API â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ Load all Time Off data from MySQL via the API Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
 
 async function loadTimeOffData() {
 
@@ -67,7 +67,7 @@ async function loadTimeOffData() {
 
         const rows = await response.json();
 
-        // Map each DB row â€” employee_name and department now come from the JOIN
+        // Map each DB row Ã¢â‚¬â€ employee_name and department now come from the JOIN
         state.requests = rows.map(row => ({
 
             // request_id is the stable DB primary key; used for PATCH/DELETE calls
@@ -112,6 +112,23 @@ async function loadTimeOffData() {
 
     } catch (err) {
         console.error("loadTimeOffData:", err);
+        document.getElementById("timeoffHeaderSummary").textContent =
+            "Unable to load leave requests";
+        document.getElementById("pendingCount").textContent = "—";
+        document.getElementById("approvedCount").textContent = "—";
+        document.getElementById("deniedCount").textContent = "—";
+
+        const tbody = document.getElementById("timeoffTableBody");
+        if (tbody) {
+            tbody.innerHTML = `
+            <tr>
+                <td colspan="9" class="text-center py-4">
+                    Unable to load leave requests. Please try again.
+                </td>
+            </tr>
+            `;
+        }
+        return;
     }
 
     render();
@@ -119,7 +136,7 @@ async function loadTimeOffData() {
 
 }
 
-// â”€â”€â”€ Render summary counters + requests table â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ Render summary counters + requests table Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
 
 function render() {
 
@@ -141,7 +158,7 @@ function render() {
     document.getElementById("deniedCount").textContent   = deniedCount;
 
     document.getElementById("timeoffHeaderSummary").textContent =
-        `${pendingCount} pending review â€¢ ${state.requests.length} total requests`;
+        `${pendingCount} pending review • ${state.requests.length} total requests`;
 
     renderRequests();
 
@@ -272,7 +289,7 @@ Deny
 class="timeoff-btn-revert"
 data-id="${request.id}">
 
-â†© Revert
+↩ Revert
 
 </button>
 
@@ -286,7 +303,7 @@ data-id="${request.id}">
 
 `).join("");
 
-    // Approve button â€” PATCH status to Approved then reload from API
+    // Approve button Ã¢â‚¬â€ PATCH status to Approved then reload from API
     document.querySelectorAll(".timeoff-btn-approve").forEach(btn => {
 
         btn.onclick = async () => {
@@ -319,7 +336,7 @@ data-id="${request.id}">
 
     });
 
-    // Deny button â€” PATCH status to Rejected then reload from API
+    // Deny button Ã¢â‚¬â€ PATCH status to Rejected then reload from API
     document.querySelectorAll(".timeoff-btn-deny").forEach(btn => {
 
         btn.onclick = async () => {
@@ -352,7 +369,6 @@ data-id="${request.id}">
 
     });
 
-    // Revert button â€” PATCH status back to Pending then reload from API
     document.querySelectorAll(".timeoff-btn-revert").forEach(btn => {
 
         btn.onclick = async () => {
@@ -462,7 +478,7 @@ function escapeHtml(value) {
 
 }
 
-// â”€â”€â”€ Calendar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ Calendar Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
 
 function renderCalendar() {
 
