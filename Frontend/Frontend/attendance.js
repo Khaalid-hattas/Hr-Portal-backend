@@ -1,699 +1,522 @@
-// fetch("attendance.json")
-
-
-
-
-// .then(response => response.json())
-// .then(data => {
-
-
-//     const tableBody = document.getElementById("attendanceTableBody");
-
-
-//     data.attendanceAndLeave.forEach((employee,index)=>{
-
-
-
-
-//         const latestAttendance =
-//         employee.attendance[employee.attendance.length-1];
-
-
-
-
-//         let historyTable = "";
-
-
-
-
-//         employee.attendance.forEach(record=>{
-
-
-
-
-//             historyTable += `
-
-
-
-
-//             <tr>
-
-
-
-
-//                 <td>${record.date}</td>
-
-
-
-
-//                 <td>
-
-
-
-
-//                     <span class="attendance-status ${record.status==="Present" ? "attendance-present" : "attendance-absent"}">
-
-
-
-
-//                         ${record.status}
-
-
-
-
-//                     </span>
-
-
-
-
-//                 </td>
-
-
-
-
-//             </tr>
-
-
-
-
-//             `;
-
-
-
-
-//         });
-
-
-
-
-//         tableBody.innerHTML += `
-
-
-
-
-//         <tr>
-
-
-
-
-//             <td>${employee.employeeId}</td>
-
-
-
-
-//             <td>${employee.name}</td>
-
-
-
-
-//             <td>
-
-
-
-
-//                 <span class="attendance-status ${latestAttendance.status==="Present" ? "attendance-present" : "attendance-absent"}">
-
-
-
-
-//                     ${latestAttendance.status}
-
-
-
-
-//                 </span>
-
-
-
-
-//             </td>
-
-
-
-
-//             <td>
-
-
-
-
-//                 <button
-//                 class="attendance-btn"
-//                 onclick="toggleAttendanceHistory(${index})">
-
-
-
-
-//                 View History
-
-
-
-
-//                 </button>
-
-
-
-
-//             </td>
-
-
-
-
-//         </tr>
-
-
-
-
-//         <tr
-//         class="attendance-history-row"
-//         id="attendanceHistory${index}">
-
-
-
-
-//             <td
-//             colspan="4"
-//             class="attendance-history-cell">
-
-
-
-
-//                 <table class="attendance-history-table">
-
-
-
-
-//                     <thead>
-
-
-
-
-//                         <tr>
-
-
-
-
-//                             <th>Date</th>
-
-
-
-
-//                             <th>Status</th>
-
-
-
-
-//                         </tr>
-
-
-
-
-//                     </thead>
-
-
-
-
-//                     <tbody>
-
-
-
-
-//                         ${historyTable}
-
-
-
-
-//                     </tbody>
-
-
-
-
-//                 </table>
-
-
-
-
-//             </td>
-
-
-
-
-//         </tr>
-
-
-
-
-//         `;
-
-
-
-
-//     });
-
-
-
-
-// });
-
-
-
-
-// function toggleAttendanceHistory(index){
-
-
-
-
-//     const historyRow =
-//     document.getElementById("attendanceHistory"+index);
-
-
-
-
-//     if(historyRow.style.display==="table-row"){
-
-
-
-
-//         historyRow.style.display="none";
-
-
-
-
-//     }else{
-
-
-
-
-//         historyRow.style.display="table-row";
-
-
-
-
-//     }
-
-
-
-
-// }
-
-
-
-
-
-
-
-
-// Dark Mode
-
-
-document.addEventListener('DOMContentLoaded', function() {
-    const themeToggle = document.getElementById('darkModeToggle');
-    const toggleText = document.getElementById('toggleText');
-
-
-    const isDarkMode = localStorage.getItem('darkMode') === 'true';
-
-
-    if (isDarkMode) {
-       document.body.classList.add('dark-mode');
-        if (themeToggle) themeToggle.classList.add('dark-mode');
-        if (toggleText) toggleText.textContent = 'Light Mode';
-    }
-
-
-    if (themeToggle) {
-        themeToggle.addEventListener('click', function() {
-            document.body.classList.toggle('dark-mode');
-            themeToggle.classList.toggle('dark-mode');
-
-
-            const isDark = document.body.classList.contains('dark-mode');
-            localStorage.setItem('darkMode', isDark);
-
-
-            if (toggleText) {
-                toggleText.textContent = isDark ? 'Light Mode' : 'Dark Mode';
-            }
-        });
-    }
-});
-
-
-
-
 /*=====================================
-    ATTENDANCE TABLE
+    LOAD ATTENDANCE + LEAVE DATA
 =====================================*/
-
-
-const attendanceTableBody = document.getElementById("attendanceTableBody");
-const attendanceSearchInput = document.getElementById("attendanceSearchInput");
-const attendanceStatusFilter = document.getElementById("attendanceStatusFilter");
-const attendanceDateFilter = document.getElementById("attendanceDateFilter");
-
 
 let attendanceEmployees = [];
 
+const attendanceTableBody =
+    document.getElementById("attendanceTableBody");
+
+
+Promise.all([
+    fetch("http://localhost:3000/api/attendance"),
+    fetch("http://localhost:3000/api/leave")
+])
+
+.then(async ([attendanceResponse, leaveResponse]) => {
+
+    if (!attendanceResponse.ok) {
+        throw new Error("Could not load attendance data");
+    }
+
+    if (!leaveResponse.ok) {
+        throw new Error("Could not load leave data");
+    }
+
+
+    const attendanceData =
+        await attendanceResponse.json();
+
+    const leaveData =
+        await leaveResponse.json();
+
+
+    console.log("Attendance:", attendanceData);
+    console.log("Leave:", leaveData);
+
+
+    /*
+    Combine the attendance records
+    with the leave records.
+    */
+
+    attendanceEmployees = attendanceData.map(attendance => {
+
+        const employeeLeaves = leaveData.filter(
+            leave =>
+                Number(leave.employee_id) ===
+                Number(attendance.employee_id)
+        );
+
+
+        return {
+            ...attendance,
+            leaveRequests: employeeLeaves
+        };
+
+    });
+
+
+    displayAttendanceTable(attendanceEmployees);
+
+})
+
+
+.catch(error => {
+
+    console.error("Error loading data:", error);
+
+    if (attendanceTableBody) {
+
+        attendanceTableBody.innerHTML = `
+            <tr>
+                <td colspan="6">
+                    Error loading attendance and leave data.
+                </td>
+            </tr>
+        `;
+
+    }
+
+});
+
 
 /*=====================================
-    LOAD JSON
+    DISPLAY ATTENDANCE TABLE
 =====================================*/
-
-
-fetch("/attendance.json")
-    .then(response => response.json())
-    .then(data => {
-
-
-        attendanceEmployees = data.attendanceAndLeave;
-
-
-        displayAttendanceTable(attendanceEmployees);
-
-
-    })
-    .catch(error => console.error(error));
-
-
-/*=====================================
-    DISPLAY TABLE
-=====================================*/
-
-
 function displayAttendanceTable(employeeList) {
 
+    if (!attendanceTableBody) {
+        console.error("attendanceTableBody not found");
+        return;
+    }
 
     attendanceTableBody.innerHTML = "";
+
+    if (!employeeList || employeeList.length === 0) {
+
+        attendanceTableBody.innerHTML = `
+            <tr>
+                <td colspan="6">
+                    No attendance records found.
+                </td>
+            </tr>
+        `;
+
+        return;
+    }
 
 
     employeeList.forEach(employee => {
 
+        const employeeName =
+            employee.employee_name || "Unknown";
 
-        // Latest attendance record
-        const latestAttendance = employee.attendance[employee.attendance.length - 1];
+        const employeeId =
+            employee.employee_id || "-";
+
+        const date =
+            employee.date
+                ? new Date(employee.date).toLocaleDateString()
+                : "-";
+
+        const attendanceStatus =
+            employee.status || "-";
 
 
-        // Latest leave request
-        const latestLeave = employee.leaveRequests.length
-            ? employee.leaveRequests[employee.leaveRequests.length - 1]
-            : {
-                reason: "-",
-                status: "-"
-            };
+        /*
+        Find ALL leave requests belonging
+        to this employee.
+        */
+
+        const leaveRequests =
+            employee.leaveRequests || [];
 
 
-        // Employee initials
-        const initials = employee.name
+        /*
+        Display all leave reasons
+        belonging to this employee.
+        */
+
+        let leaveReason = "-";
+        let leaveStatus = "-";
+
+
+        if (leaveRequests.length > 0) {
+
+            leaveReason = leaveRequests
+                .map(leave => leave.reason)
+                .join("<br>");
+
+
+            leaveStatus = leaveRequests
+                .map(leave => leave.status)
+                .join("<br>");
+        }
+
+
+        /*
+        Employee initials
+        */
+
+        const initials = employeeName
             .split(" ")
-            .map(word => word[0])
+            .map(name => name.charAt(0))
             .join("")
             .substring(0, 2)
             .toUpperCase();
 
 
-        let attendanceClass =
-            latestAttendance.status === "Present"
-                ? "attendance-present"
-                : "attendance-absent";
+        /*
+        Attendance status styling
+        */
 
+        let attendanceClass = "";
 
-        let leaveClass = "";
+        if (
+            attendanceStatus.toLowerCase() === "present"
+        ) {
 
+            attendanceClass = "attendance-present";
 
-        switch (latestLeave.status) {
+        } else if (
+            attendanceStatus.toLowerCase() === "absent"
+        ) {
 
+            attendanceClass = "attendance-absent";
 
-            case "Approved":
-                leaveClass = "attendance-approved";
-                break;
+        } else if (
+            attendanceStatus.toLowerCase() === "late"
+        ) {
 
-
-            case "Pending":
-                leaveClass = "attendance-pending";
-                break;
-
-
-            case "Denied":
-                leaveClass = "attendance-denied";
-                break;
-
-
-            default:
-                leaveClass = "";
+            attendanceClass = "attendance-pending";
         }
 
 
+        /*
+        Leave status styling
+        */
+
+        let leaveClass = "";
+
+        if (
+            leaveStatus.toLowerCase().includes("approved")
+        ) {
+
+            leaveClass = "attendance-present";
+
+        } else if (
+            leaveStatus.toLowerCase().includes("denied")
+        ) {
+
+            leaveClass = "attendance-absent";
+
+        } else if (
+            leaveStatus.toLowerCase().includes("pending")
+        ) {
+
+            leaveClass = "attendance-pending";
+        }
+
+
+        /*
+        Create table row
+        */
+
         attendanceTableBody.innerHTML += `
 
+            <tr>
 
-        <tr>
+                <!-- Employee -->
 
+                <td>
 
-            <td>
+                    <div
+                        class="attendance-employee"
+                        onclick="showAttendanceHistory(${employeeId})"
+                    >
 
-
-                <div class="attendance-employee"
-                    onclick="showAttendanceHistory(${employee.employeeId})">
-
-
-                    <div class="attendance-avatar">
-                        ${initials}
-                    </div>
-
-
-                    <div>
-
-
-                        <div class="attendance-name">
-                            ${employee.name}
+                        <div class="attendance-avatar">
+                            ${initials}
                         </div>
 
+                        <div>
 
-                        <div class="attendance-subtitle">
-                            Employee
+                            <div class="attendance-name">
+                                ${employeeName}
+                            </div>
+
+                            <div class="attendance-subtitle">
+                                Employee
+                            </div>
+
                         </div>
-
 
                     </div>
 
-
-                </div>
-
-
-            </td>
+                </td>
 
 
-            <td>
-                EMP-${String(employee.employeeId).padStart(3, "0")}
-            </td>
+                <!-- Employee ID -->
+
+                <td>
+                    EMP-${String(employeeId).padStart(3, "0")}
+                </td>
 
 
-            <td>
-                ${latestAttendance.date}
-            </td>
+                <!-- Date -->
+
+                <td>
+                    ${date}
+                </td>
 
 
-            <td>
+                <!-- Attendance -->
+
+                <td>
+
+                    <span
+                        class="attendance-status ${attendanceClass}"
+                    >
+                        ${attendanceStatus}
+                    </span>
+
+                </td>
 
 
-                <span class="attendance-status ${attendanceClass}">
-                    ${latestAttendance.status}
-                </span>
+                <!-- Leave Reason -->
+
+                <td>
+                    ${leaveReason}
+                </td>
 
 
-            </td>
+                <!-- Leave Status -->
 
+                <td>
 
-            <td>
-                ${latestLeave.reason}
-            </td>
+                    <span
+                        class="attendance-status ${leaveClass}"
+                    >
+                        ${leaveStatus}
+                    </span>
 
+                </td>
 
-            <td>
-
-
-                <span class="attendance-status ${leaveClass}">
-                    ${latestLeave.status}
-                </span>
-
-
-            </td>
-
-
-        </tr>
-
+            </tr>
 
         `;
 
-
     });
-
 
 }
 
-
 /*=====================================
-    SEARCH
+    ATTENDANCE HISTORY
 =====================================*/
 
+function showAttendanceHistory(employeeId) {
 
-attendanceSearchInput.addEventListener("keyup", filterAttendanceTable);
-
-
-/*=====================================
-    STATUS FILTER
-=====================================*/
-
-
-attendanceStatusFilter.addEventListener("change", filterAttendanceTable);
+    const employeeRecords =
+        attendanceEmployees.filter(
+            employee =>
+                Number(employee.employee_id) === Number(employeeId)
+        );
 
 
-/*=====================================
-    DATE FILTER
-=====================================*/
+    if (employeeRecords.length === 0) {
+        return;
+    }
 
 
-attendanceDateFilter.addEventListener("change", filterAttendanceTable);
+    const employeeName =
+        employeeRecords[0].employee_name || "Employee";
 
 
-/*=====================================
-    FILTER TABLE
-=====================================*/
+    const employeeNameElement =
+        document.getElementById("attendanceEmployeeName");
 
 
-function filterAttendanceTable() {
+    if (employeeNameElement) {
+
+        employeeNameElement.innerHTML =
+            employeeName + " - Recent";
+
+    }
 
 
-    const searchValue = attendanceSearchInput.value.trim().toLowerCase();
-    const selectedStatus = attendanceStatusFilter.value;
-    const selectedDate = attendanceDateFilter.value;
+    const body =
+        document.getElementById("attendanceHistoryBody");
 
 
-    const filteredEmployees = attendanceEmployees.filter(employee => {
-
-
-        const latestAttendance = employee.attendance[employee.attendance.length - 1];
-
-
-        const employeeId = String(employee.employeeId);
-
-
-        // Search by name OR employee ID
-        const matchesSearch =
-            employee.name.toLowerCase().includes(searchValue) ||
-            employeeId.includes(searchValue);
-
-
-        // Status filter
-        const matchesStatus =
-            selectedStatus === "All" ||
-            latestAttendance.status === selectedStatus;
-
-
-        // Date filter
-        const matchesDate =
-            selectedDate === "" ||
-            latestAttendance.date === selectedDate;
-
-
-        return matchesSearch && matchesStatus && matchesDate;
-
-
-    });
-
-
-    displayAttendanceTable(filteredEmployees);
-
-
-}
-
-
-
-function showAttendanceHistory(employeeId){
-
-
-    const employee = attendanceEmployees.find(
-        emp => emp.employeeId === employeeId
-    );
-
-
-    document.getElementById("attendanceEmployeeName").innerHTML =
-        employee.name + " - Recent";
-
-
-    const body = document.getElementById("attendanceHistoryBody");
+    if (!body) {
+        return;
+    }
 
 
     body.innerHTML = "";
 
 
-    employee.attendance.forEach(record=>{
+    employeeRecords.forEach(record => {
+
+        let attendanceClass = "";
+
+        if (record.status === "Present") {
+            attendanceClass = "attendance-present";
+        }
+        else if (record.status === "Absent") {
+            attendanceClass = "attendance-absent";
+        }
+        else if (record.status === "Late") {
+            attendanceClass = "attendance-pending";
+        }
 
 
         body.innerHTML += `
 
-
         <tr>
 
-
-            <td>${record.date}</td>
-
+            <td>
+                ${record.date || "-"}
+            </td>
 
             <td>
 
-
-                <span class="attendance-status ${
-                    record.status==="Present"
-                    ? "attendance-present"
-                    : "attendance-absent"
-                }">
-
-
-                    ${record.status}
-
-
+                <span class="attendance-status ${attendanceClass}">
+                    ${record.status || "-"}
                 </span>
-
 
             </td>
 
-
         </tr>
 
-
         `;
-
 
     });
 
 
-    document.getElementById("attendanceHistoryModal").style.display="flex";
+    const modal =
+        document.getElementById("attendanceHistoryModal");
 
 
-}
-
-
-function closeAttendanceHistory(){
-
-
-    document.getElementById("attendanceHistoryModal").style.display="none";
-
-
-}
-
-
-    // --- UNIFIED DARK MODE TOGGLE LOGIC ---
-
-    const darkModeToggle = document.getElementById('darkModeToggle');
-
-    if (window.HRTheme) {
-        window.HRTheme.syncThemeControls(window.HRTheme.getSavedTheme());
+    if (modal) {
+        modal.style.display = "flex";
     }
 
-    if (darkModeToggle) {
-        darkModeToggle.addEventListener('click', () => {
-            if (window.HRTheme) {
-                window.HRTheme.toggleTheme();
+}
+
+
+/*=====================================
+    CLOSE ATTENDANCE HISTORY
+=====================================*/
+
+function closeAttendanceHistory() {
+
+    const modal =
+        document.getElementById("attendanceHistoryModal");
+
+
+    if (modal) {
+        modal.style.display = "none";
+    }
+
+}
+
+
+/*=====================================
+    DARK MODE
+=====================================*/
+
+document.addEventListener("DOMContentLoaded", function () {
+
+    const themeToggle =
+        document.getElementById("darkModeToggle");
+
+    const toggleText =
+        document.getElementById("toggleText");
+
+
+    const isDarkMode =
+        localStorage.getItem("darkMode") === "true";
+
+
+    if (isDarkMode) {
+
+        document.body.classList.add("dark-mode");
+
+        if (themeToggle) {
+            themeToggle.classList.add("dark-mode");
+        }
+
+        if (toggleText) {
+            toggleText.textContent = "Light Mode";
+        }
+
+    }
+
+
+    if (themeToggle) {
+
+        themeToggle.addEventListener("click", function () {
+
+            document.body.classList.toggle("dark-mode");
+
+            themeToggle.classList.toggle("dark-mode");
+
+
+            const isDark =
+                document.body.classList.contains("dark-mode");
+
+
+            localStorage.setItem(
+                "darkMode",
+                isDark
+            );
+
+
+            if (toggleText) {
+
+                toggleText.textContent =
+                    isDark
+                        ? "Light Mode"
+                        : "Dark Mode";
+
             }
+
         });
+
     }
 
+});
+
+
+/*=====================================
+    UNIFIED DARK MODE TOGGLE
+=====================================*/
+
+const darkModeToggle =
+    document.getElementById("darkModeToggle");
+
+
+if (window.HRTheme) {
+
+    window.HRTheme.syncThemeControls(
+        window.HRTheme.getSavedTheme()
+    );
+
+}
+
+
+if (darkModeToggle) {
+
+    darkModeToggle.addEventListener("click", () => {
+
+        if (window.HRTheme) {
+
+            window.HRTheme.toggleTheme();
+
+        }
+
+    });
+
+}
