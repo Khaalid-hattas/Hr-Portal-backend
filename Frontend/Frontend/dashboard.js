@@ -1,3 +1,30 @@
+const API_BASE_URL = "http://localhost:3000/api";
+
+async function loadDashboardData() {
+    const totalEmployeesEl = document.getElementById('totalEmployeesValue');
+    const payrollValueEl = document.getElementById('monthlyPayrollValue');
+    const leaveValueEl = document.getElementById('openLeaveValue');
+    const attendanceValueEl = document.getElementById('attendanceValue');
+
+    try {
+        const response = await fetch(`${API_BASE_URL}/dashboard/stats`);
+        if (!response.ok) throw new Error('Dashboard stats request failed');
+
+        const result = await response.json();
+        const summary = result.data?.summary || {};
+        const totalEmployees = summary.totalEmployees || 0;
+        const totalPayroll = summary.totalPayroll || 0;
+        const activeEmployees = summary.activeEmployees || 0;
+
+        if (totalEmployeesEl) totalEmployeesEl.textContent = totalEmployees;
+        if (payrollValueEl) payrollValueEl.textContent = `R ${(totalPayroll / 1000000).toFixed(2)}M`;
+        if (leaveValueEl) leaveValueEl.textContent = activeEmployees;
+        if (attendanceValueEl) attendanceValueEl.textContent = '96.2%';
+    } catch (error) {
+        console.error('Dashboard API load failed:', error);
+    }
+}
+
 // =========================================================================
 // MAIN APPLICATION LOGIC
 // =========================================================================
@@ -116,4 +143,6 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         });
     }
+
+    loadDashboardData();
 });
