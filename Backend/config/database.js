@@ -1,16 +1,20 @@
-const { Sequelize } = require('sequelize');
-require('dotenv').config();
+import mysql from 'mysql2/promise';
+import dotenv from 'dotenv';
 
-const sequelize = new Sequelize(
-  process.env.DB_NAME,
-  process.env.DB_USER,
-  process.env.DB_PASSWORD,
-  {
-    host: process.env.DB_HOST,
+dotenv.config();
+
+const pool  = mysql.createPool({
+  database: process.env.DB_NAME,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  host: process.env.DB_HOST,
     port: process.env.DB_PORT,
-    dialect: 'postgres', // Options: 'mysql' | 'postgres' | 'sqlite' | 'mssql'
+    dialect: 'mysql', // Options: 'mysql' | 'postgres' | 'sqlite' | 'mssql'
     logging: false,
+    password: process.env.DB_PASSWORD, 
+    username: process.env.DB_USER,
+    name: process.env.DB_NAME,
   }
 );
 
-module.exports = sequelize;
+export default pool;
