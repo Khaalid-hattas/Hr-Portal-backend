@@ -53,3 +53,9 @@ CREATE TABLE `moderntech-hr-backend-project`.`payroll_table` (
   ('155', '917', '61500'),
   ('162', '917', '57750');
   
+select * from employees_table;
+alter table employees_table add unique(contact);
+alter table employees_table add column `status` varchar(20) default 'active';
+
+create table archived_employees like employees_table;
+alter table archived_employees add column archived_at timestamp default current_timestamp;
