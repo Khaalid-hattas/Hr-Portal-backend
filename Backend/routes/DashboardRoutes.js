@@ -1,7 +1,16 @@
-const express = require('express');
+import express from 'express';
+import {
+  getDashboardStats,
+  getAttendanceOverview,
+  getLeaveOverview,
+  getEmployeeList
+} from '../Controllers/DashboardController.js';
+
 const router = express.Router();
-const { getDashboardStats } = require('../controllers/dashboardController');
 
 router.get('/stats', getDashboardStats);
+router.get('/attendance', getAttendanceOverview);
+router.get('/leaves', getLeaveOverview);
+router.get('/employees', getEmployeeList);
 
-module.exports = router;
+export default router;

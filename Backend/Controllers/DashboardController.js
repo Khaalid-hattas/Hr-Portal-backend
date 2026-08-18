@@ -1,36 +1,78 @@
-const Employee = require('../models/Employee');
-const Leave = require('../models/Leave');
+import {
+  getDashboardStats as getDashboardSummary,
+  getAttendanceSummary,
+  getLeaveSummary,
+  getAllEmployees
+} from '../models/DashboardModels.js';
 
-// Get overall dashboard statistics and analytics
-exports.getDashboardStats = async (req, res) => {
-    try {
-        const totalEmployees = await Employee.countDocuments();
-        const activeEmployees = await Employee.countDocuments({ status: 'Active' });
-        const pendingLeaves = await Leave.countDocuments({ status: 'Pending' });
+export const getDashboardStats = async (req, res) => {
+  try {
+    const stats = await getDashboardSummary();
 
-        // Aggregate employees by department
-        const employeesByDepartment = await Employee.aggregate([
-            { $group: { _id: '$department', count: { $sum: 1 } } }
-        ]);
+    res.status(200).json({
+      success: true,
+      data: {
+        summary: {
+          totalEmployees: stats.totalEmployees,
+          totalPayroll: stats.totalPayroll,
+          pendingLeaves: stats.pendingLeaves,
+          activeEmployees: stats.totalEmployees
+        },
+        departments: stats.departments || []
+      }
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
 
-        // Aggregate leave stats by status
-        const leaveStats = await Leave.aggregate([
-            { $group: { _id: '$status', count: { $sum: 1 } } }
-        ]);
+export const getAttendanceOverview = async (req, res) => {
+  try {
+    const attendance = await getAttendanceSummary();
 
-        res.status(200).json({
-            success: true,
-            data: {
-                summary: {
-                    totalEmployees,
-                    activeEmployees,
-                    pendingLeaves
-                },
-                employeesByDepartment,
-                leaveStats
-            }
-        });
-    } catch (error) {
-        res.status(500).json({ success: false, message: error.message });
-    }
+    res.status(200).json({
+      success: true,
+      data: attendance
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+
+export const getLeaveOverview = async (req, res) => {
+  try {
+    const leaveData = await getLeaveSummary();
+
+    res.status(200).json({
+      success: true,
+      data: leaveData
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+
+export const getEmployeeList = async (req, res) => {
+  try {
+    const employees = await getAllEmployees();
+
+    res.status(200).json({
+      success: true,
+      data: employees
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
 };
