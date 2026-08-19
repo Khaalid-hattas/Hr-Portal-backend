@@ -3,11 +3,14 @@ const loginForm = document.getElementById("loginForm");
 loginForm.addEventListener("submit", async function (event) {
     event.preventDefault();
 
-    const email = document.getElementById("email").value.trim();
+    const username = document.getElementById("username").value.trim();
     const password = document.getElementById("password").value;
 
-    if (!email || !password) {
-        alert("Please enter your email and password.");
+    const message = document.getElementById("message");
+
+    if (!username || !password) {
+        message.style.color = "red";
+        message.innerHTML = "Please enter your username and password.";
         return;
     }
 
@@ -20,7 +23,7 @@ loginForm.addEventListener("submit", async function (event) {
                     "Content-Type": "application/json"
                 },
                 body: JSON.stringify({
-                    email: email,
+                    username: username,
                     password: password
                 })
             }
@@ -29,24 +32,33 @@ loginForm.addEventListener("submit", async function (event) {
         const data = await response.json();
 
         if (!response.ok) {
-            alert(data.message || "Login failed.");
+            message.style.color = "red";
+            message.innerHTML = data.message || "Login failed.";
             return;
         }
+
+        // Login successful
+        message.style.color = "green";
+        message.innerHTML = "Login Successful!";
 
         // Save JWT token
         localStorage.setItem("token", data.token);
 
-        // Save logged-in user
+        // Save user information
         localStorage.setItem(
             "user",
             JSON.stringify(data.user)
         );
 
         // Go to dashboard
-        window.location.href = "indexdash.html";
+        setTimeout(() => {
+            window.location.href = "indexdash.html";
+        }, 1000);
 
     } catch (error) {
         console.error("Login error:", error);
-        alert("Unable to connect to the server.");
+
+        message.style.color = "red";
+        message.innerHTML = "Unable to connect to the server.";
     }
 });
