@@ -2,22 +2,19 @@ import pool from '../config/database.js';
 
 export const getDashboardStats = async () => {
   const [employeeRows] = await pool.query(
-    'SELECT COUNT(*) AS totalEmployees FROM employee_information'
+    'SELECT COUNT(*) AS totalEmployees FROM employees'
   );
-
   const [payrollRows] = await pool.query(
     'SELECT COALESCE(SUM(final_salary), 0) AS totalPayroll FROM payroll'
   );
-
   const [leaveRows] = await pool.query(
     "SELECT COUNT(*) AS pendingLeaves FROM leave_requests WHERE status = 'Pending'"
   );
-
   const [departmentRows] = await pool.query(
     `SELECT department, COUNT(*) AS total
      FROM employee_information
      GROUP BY department
-     ORDER BY total DESC`
+     ORDER BY total DESC, department ASC`
   );
 
   return {
@@ -34,74 +31,58 @@ export const getAttendanceSummary = async () => {
      FROM attendance
      GROUP BY status`
   );
-
+  const [dailyRows] = await pool.query(
+    `SELECT date,
+            SUM(status = 'Present') AS present,
+            SUM(status = 'Absent') AS absent
+     FROM attendance
+     GROUP BY date
+     ORDER BY date ASC`
+  );
   const [recentRows] = await pool.query(
     `SELECT e.employee_id, e.name, a.date, a.status
      FROM attendance a
      INNER JOIN employees e ON e.employee_id = a.employee_id
-     ORDER BY a.date DESC
+     ORDER BY a.date DESC, e.name ASC
      LIMIT 10`
   );
 
-  const summary = {
-    present: 0,
-    absent: 0
-  };
-
+  const summary = { present: 0, absent: 0 };
   (attendanceRows || []).forEach((row) => {
     const key = String(row.status).toLowerCase();
     if (key === 'present') summary.present = Number(row.total || 0);
     if (key === 'absent') summary.absent = Number(row.total || 0);
   });
 
-  return {
-    summary,
-    recentAttendance: recentRows || []
-  };
+  return { summary, dailyAttendance: dailyRows || [], recentAttendance: recentRows || [] };
 };
 
 export const getLeaveSummary = async () => {
   const [leaveRows] = await pool.query(
-    `SELECT status, COUNT(*) AS total
-     FROM leave_requests
-     GROUP BY status`
+    `SELECT status, COUNT(*) AS total FROM leave_requests GROUP BY status`
   );
-
   const [recentRows] = await pool.query(
     `SELECT lr.request_id, e.name, lr.reason, lr.date, lr.status
      FROM leave_requests lr
      INNER JOIN employees e ON e.employee_id = lr.employee_id
-     ORDER BY lr.date DESC
+     ORDER BY lr.date DESC, lr.request_id DESC
      LIMIT 10`
   );
 
-  const summary = {
-    approved: 0,
-    pending: 0,
-    denied: 0
-  };
-
+  const summary = { approved: 0, pending: 0, denied: 0 };
   (leaveRows || []).forEach((row) => {
     const key = String(row.status).toLowerCase();
-    if (key === 'approved') summary.approved = Number(row.total || 0);
-    if (key === 'pending') summary.pending = Number(row.total || 0);
-    if (key === 'denied') summary.denied = Number(row.total || 0);
+    if (key in summary) summary[key] = Number(row.total || 0);
   });
 
-  return {
-    summary,
-    recentLeaves: recentRows || []
-  };
+  return { summary, recentLeaves: recentRows || [] };
 };
 
 export const getAllEmployees = async () => {
   const [rows] = await pool.query(
-    `SELECT employee_id AS employeeId, name, department, position 
-     FROM employee_information 
+    `SELECT employee_id AS employeeId, name, department, position
+     FROM employee_information
      ORDER BY name ASC`
   );
-
-  return {
-    employeeInformation: rows || []
-  };
+  return { employeeInformation: rows || [] };
 };
