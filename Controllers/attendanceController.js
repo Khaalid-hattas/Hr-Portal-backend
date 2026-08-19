@@ -1,4 +1,5 @@
 const attendanceModel = require("../models/attendanceModel");
+const db = require("../config/db");
 
 // Get all attendance records
 const getAttendance = async (req, res) => {

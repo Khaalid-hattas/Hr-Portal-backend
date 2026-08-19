@@ -1,41 +1,46 @@
+const authModel = require("../models/authModel");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
-const authModel = require("../models/authModel");
 
 const login = async (req, res) => {
     try {
-        const { email, password } = req.body;
+        const { username, password } = req.body;
 
-        if (!email || !password) {
+        // Check if username and password were provided
+        if (!username || !password) {
             return res.status(400).json({
-                message: "Email and password are required"
+                message: "Username and password are required"
             });
         }
 
-        const user = await authModel.getUserByEmail(email);
+        // Find user by username
+        const user = await authModel.getUserByUsername(username);
 
+        // User does not exist
         if (!user) {
             return res.status(401).json({
-                message: "Invalid email or password"
+                message: "Invalid username or password"
             });
         }
 
+        // Compare entered password with hashed password in database
         const passwordMatch = await bcrypt.compare(
             password,
             user.password
         );
 
+        // Password is incorrect
         if (!passwordMatch) {
             return res.status(401).json({
-                message: "Invalid email or password"
+                message: "Invalid username or password"
             });
         }
 
+        // Create JWT
         const token = jwt.sign(
             {
                 id: user.id,
-                employee_id: user.employee_id,
-                email: user.email,
+                username: user.username,
                 role: user.role
             },
             process.env.JWT_SECRET,
@@ -44,13 +49,13 @@ const login = async (req, res) => {
             }
         );
 
+        // Login successful
         res.status(200).json({
             message: "Login successful",
             token: token,
             user: {
                 id: user.id,
-                employee_id: user.employee_id,
-                email: user.email,
+                username: user.username,
                 role: user.role
             }
         });
@@ -59,7 +64,8 @@ const login = async (req, res) => {
         console.error("Login error:", error);
 
         res.status(500).json({
-            message: "Server error during login"
+            message: "Server error",
+            error: error.message
         });
     }
 };
