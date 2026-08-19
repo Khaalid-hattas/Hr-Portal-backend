@@ -1,7 +1,7 @@
 // Global State Management Variables
 const API_BASE_URL = "http://localhost:3000/api";
 let employees = [];
-let seedEmployees = []; // Fallback array if backend is unreachable
+const seedEmployees = [];
 let selectedEmployeeId = null;
 let activeVisibility = "Public";
 let attachedWordFile = null;
@@ -27,10 +27,7 @@ async function loadEmployees() {
             employmentHistory: Array.isArray(emp.employmentHistory) ? emp.employmentHistory : []
         }));
     } catch (err) {
-        console.error("JSON Loading Error:", err); 
-        console.warn("Using local seeded employee database context instead.");
-        
-        // Process default seeds through normalization step
+        console.error("JSON Loading Error:", err);
         employees = seedEmployees.map(emp => ({
             ...emp,
             createdDate: emp.createdDate || new Date().toISOString().split('T')[0],
@@ -38,6 +35,12 @@ async function loadEmployees() {
         }));
     }        
     
+    if (employees.length === 0) {
+        const container = document.getElementById('employeeListContainer');
+        if (container) container.innerHTML = '<div class="text-muted">Unable to load employees from the server.</div>';
+        return;
+    }
+
     renderList();
     
     // Auto-select first item on boot
@@ -174,8 +177,23 @@ function renderHistory(emp) {
     });
 }
 
-// Pipeline handling updates directly into dynamic data storage context models and Backend API
-async function saveReviewEntry() {
+function setFormVisibility(visibility) {
+    activeVisibility = visibility || 'Public';
+    document.querySelectorAll('#visibilityGroup .btn').forEach((button) => {
+        button.classList.toggle('active', button.innerText.trim() === activeVisibility);
+    });
+}
+
+function evaluateFileStatus(input) {
+    handleFileSelection(input);
+}
+
+function filterEmployeeList() {
+    renderList();
+}
+
+// Reviews remain in-memory because the shared schema has no reviews table.
+function saveReviewEntry() {
     if (!selectedEmployeeId) {
         alert('Please select an active employee profile track first.');
         return;
@@ -200,31 +218,6 @@ async function saveReviewEntry() {
         text: commentText
     };
 
-    // Send payload to backend API using FormData (to handle text + attached Word document)
-    try {
-        const formData = new FormData();
-        formData.append('employeeId', selectedEmployeeId);
-        formData.append('type', reviewType);
-        formData.append('visibility', activeVisibility);
-        formData.append('date', newEntry.date);
-        formData.append('text', commentText);
-        
-        if (attachedWordFile) {
-            formData.append('wordDocument', attachedWordFile);
-        }
-
-        const res = await fetch(`${API_BASE_URL}/employees/${selectedEmployeeId}/reviews`, {
-            method: 'POST',
-            body: formData
-        });
-
-        if (!res.ok) {
-            console.warn('Backend rejected review save. Falling back to local state updates.');
-        }
-    } catch (err) {
-        console.error('API Error saving review:', err);
-    }
-
     // Append to local state array for immediate dynamic rendering
     targetEmployee.employmentHistory.push(newEntry);
 
@@ -241,7 +234,7 @@ async function saveReviewEntry() {
     selectEmployee(selectedEmployeeId);
 }
 
-async function addNewEmployee() {
+function addNewEmployee() {
     const nameInput = document.getElementById('newEmpName');
     const posInput = document.getElementById('newEmpPos');
     const deptInput = document.getElementById('newEmpDept');
@@ -263,28 +256,9 @@ async function addNewEmployee() {
         employmentHistory: []
     };
 
-    let assignedId = null;
-
-    // Attempt backend persistence
-    try {
-        const res = await fetch(`${API_BASE_URL}/employees`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(newEmp)
-        });
-
-        if (res.ok) {
-            const createdData = await res.json();
-            assignedId = createdData.employeeId || createdData.id;
-        }
-    } catch (err) {
-        console.error("API error creating employee:", err);
-    }
-
-    // Fallback ID generation if API fails or doesn't return an ID
-    if (!assignedId) {
-        assignedId = employees.length > 0 ? Math.max(...employees.map(emp => emp.employeeId)) + 1 : 1;
-    }
+    const assignedId = employees.length > 0
+        ? Math.max(...employees.map(emp => Number(emp.employeeId) || 0)) + 1
+        : 1;
 
     newEmp.employeeId = assignedId;
     employees.push(newEmp);
