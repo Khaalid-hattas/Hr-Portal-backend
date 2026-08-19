@@ -9,14 +9,14 @@ let attachedWordFile = null;
 // Core async initializer engine
 async function loadEmployees() {
     try {
-        const res = await fetch(`${API_BASE_URL}/employees`);
+        const res = await fetch(`${API_BASE_URL}/dashboard/employees`);
         if (!res.ok) throw new Error(`HTTP error! Status: ${res.status}`);
         const rawData = await res.json();
         
         // Flexible array extractor supporting direct arrays or object wrappers
         const rawList = Array.isArray(rawData) 
             ? rawData 
-            : (rawData.employeeInformation || rawData.employees || rawData.data || []);
+            : (rawData.data?.employeeInformation || rawData.employeeInformation || rawData.employees || rawData.data || []);
 
         employees = rawList.map(emp => ({
             employeeId: emp.employeeId || emp.id,
