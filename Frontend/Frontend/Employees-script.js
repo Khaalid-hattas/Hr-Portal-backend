@@ -14,20 +14,30 @@ async function loadEmployees() {
 
     try {
 
-        const response = await fetch("./data/employee_info.json");
+        const response = await fetch("http://localhost:3000/api/employees");
+        const employees = await response.json();
 
-        if (!response.ok)
-            throw new Error("Unable to load employees.");
+        console.log(employees);
 
-        const data = await response.json();
+       const tableBody = document.getElementById("employeeTable");
+       tableBody.innerHTML = '';
 
-        employees = data.employeeInformation.map(emp => ({
-            ...emp,
-            isDeleted: false
-        }));
+       employees.forEach(emp => {
+        const actionButton = emp.status === 'active'
+        ? `<button onclick="deleteEmployee(${emp.employees_id})" class="btn-delete">Delete</button>`
+        : `<button onclick="restoreEmployee(${emp.employees_id})" class="btn-restore">Restore</button>`;
 
-        render();
-
+        tableBody.innerHTML += `
+        <tr>
+        <td>${emp.employees_id}</td>
+        <td>${emp.name}</td>
+        <td>${emp.position}</td>
+        <td>${emp.department}</td>
+        <td>R${emp.salary}</td>
+        <td><span class="em-status-badge ${emp.status}">${emp.status}</span></td>
+        <td>${actionButton}</td>
+        </tr>`;
+       });
     } catch (err) {
 
         console.error(err);
@@ -43,6 +53,55 @@ async function loadEmployees() {
 
 }
 
+async function deleteEmployee(id) {
+    if(confirm("Delete this employee?")) {
+        await fetch (`http://localhost:3000/api/employees/${id}`, {method: 'DELETE'});
+        loadEmployees();
+    }
+    
+}
+
+async function restoreEmployee(id) {
+    if(confirm("Restore this employee?")) {
+        const response = await fetch (`http://localhost:3000/api/employees/restore/${id}`, {method: 'POST'});
+        const result = await response.json();
+        alert(result.message);
+        loadEmployees();
+        loadArchivedEmployees();
+    }
+}
+
+loadEmployees();
+async function loadArchivedEmployees() {
+    try {
+        const response = await fetch('http://localhost:3000/api/employees/archived');
+        const archived = await response.json();
+
+        const archivedTableBody = document.getElementById("archivedEmployeeTableBody");
+        archivedTableBody.innerHTML ='';
+
+        if(archived.length === 0) {
+            archivedTableBody.innerHTML = `<tr><td colspan="6">No Archived employees</td></tr>`;
+            return;
+        }
+
+        archived.forEach(emp => {
+            archivedTableBody.innerHTML += `
+            <tr>
+            <td>${emp.employees_id}</td>
+            <td>${emp.name}</td>
+            <td>${emp.department}</td>
+            <td>${emp.position}</td>
+            <td>R${emp.salary}</td>
+            <td><span class="em-status-badge ${emp.status}">${emp.status}</span></td>
+            <td><button onclick="restoreEmployee(${emp.employees_id})" class="btn-restore">Restore</button></td></tr>`;
+        });
+    } catch (err) {
+        console.error(err);
+    }
+}
+loadEmployees();
+loadArchivedEmployees();
 
 function getInitials(name) {
 
@@ -97,7 +156,7 @@ function render(list = employees) {
         const row = document.createElement("tr");
 
         row.innerHTML = `
-            <td>E${String(emp.employeeId).padStart(3,"0")}</td>
+            <td>E${String(emp.employees_id).padStart(3,"0")}</td>
 
             <td>
                 <span class="em-avatar"
@@ -121,7 +180,7 @@ function render(list = employees) {
 
             <td>
                 <button class="em-btn-delete"
-                onclick="deleteEmp(${emp.employeeId})">
+                onclick="deleteEmp(${emp.employees_id})">
                 🗑 Delete
                 </button>
             </td>
@@ -138,7 +197,7 @@ function render(list = employees) {
             const row = document.createElement("tr");
 
             row.innerHTML = `
-                <td>E${String(emp.employeeId).padStart(3,"0")}</td>
+                <td>E${String(emp.employees_id).padStart(3,"0")}</td>
 
                 <td>${emp.name}</td>
 
@@ -156,7 +215,7 @@ function render(list = employees) {
 
                 <td>
                     <button class="em-btn-retrieve"
-                    onclick="restoreEmp(${emp.employeeId})">
+                    onclick="restoreEmp(${emp.employees_id})">
                     ↩ Restore
                     </button>
                 </td>

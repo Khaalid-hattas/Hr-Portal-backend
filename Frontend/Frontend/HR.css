@@ -4487,3 +4487,39 @@ main.payroll-container {
   color: #ffffff !important;
   border-color: #3d3d54 !important;
 }
+/* Action Buttons container */
+td:last-child {
+    display: flex;
+    gap: 8px;
+}
+
+/* Base Button style */
+.btn-delete, .btn-restore {
+    border: none;
+    padding: 8px 14px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+/* Satus badges */
+.em-status-badge {
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: capitalize;
+}
+.em-status-badge.active {
+    background: #d1fae5;
+    color: #065f46;
+}
+.em-status-badge.inactive {
+    background: #fee2e2;
+    color: #991b1b;
+}
