@@ -1,6 +1,6 @@
 import express from 'express';
 
-import { getPayrollCon , Payslip, getSinglePayrollCon } from "../controller/payroll_controller.js";
+import { getPayrollCon, Payslip, getSinglePayrollCon } from "../Controllers/payroll_controller.js";
 
 const router = express.Router();
 

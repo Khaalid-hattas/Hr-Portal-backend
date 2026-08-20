@@ -1,4 +1,4 @@
-const db = require("../../config/db");
+import db from '../../config/db.js';
 
 const getUserByUsername = async (username) => {
     const [rows] = await db.query(
@@ -9,6 +9,6 @@ const getUserByUsername = async (username) => {
     return rows[0];
 };
 
-module.exports = {
+export {
     getUserByUsername
 };

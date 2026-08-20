@@ -1,9 +1,8 @@
-const express = require("express");
+import express from 'express';
 
 const router = express.Router();
 
-const attendanceController =
-    require("../Controllers/attendanceController");
+import * as attendanceController from '../Controllers/attendanceController.js';
 
 
 // =====================================
@@ -66,4 +65,4 @@ router.get(
 );
 
 
-module.exports = router;
+export default router;

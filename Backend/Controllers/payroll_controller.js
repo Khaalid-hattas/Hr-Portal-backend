@@ -1,6 +1,6 @@
-import { getPayroll, getPayrollData, newPayrollData,getSinglePayrollData } from "../model/payroll_db.js";
+import { getPayroll, getPayrollData, newPayrollData, getSinglePayrollData } from "../models/payroll_db.js";
 
-import { getEmployeesInfo } from "../model/employees_db.js";
+import { getEmployeesInfo } from "../models/employees_db.js";
 
 
 

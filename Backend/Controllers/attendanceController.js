@@ -1,4 +1,4 @@
-const attendanceModel = require("../models/attendanceModel");
+import * as attendanceModel from '../models/attendanceModel.js';
 
 
 // =====================================
@@ -289,7 +289,7 @@ const getAttendanceStats = async (req, res) => {
 // EXPORT
 // =====================================
 
-module.exports = {
+export {
     getAttendance,
     getEmployeeAttendance,
     createAttendance,

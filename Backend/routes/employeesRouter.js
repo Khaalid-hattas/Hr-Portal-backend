@@ -5,7 +5,7 @@ import { db } from "../config/payroll_config.js";
 import {
   getEmployeesControllers,
   getSingleEmployeeController,
-} from "../controller/employees_controller.js";
+} from "../Controllers/employees_controller.js";
 
 const router = express.Router();
 

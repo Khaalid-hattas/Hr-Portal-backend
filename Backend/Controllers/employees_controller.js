@@ -1,7 +1,7 @@
 // here will be the callbacks.
 import { db } from "../config/payroll_config.js";
 
-import { getEmployees,getEmployeesInfo } from "../model/employees_db.js";
+import { getEmployees, getEmployeesInfo } from "../models/employees_db.js";
 
 export const getEmployeesControllers = async (req, res) => {
   try {

@@ -5,7 +5,7 @@ export const getDashboardStats = async () => {
     'SELECT COUNT(*) AS totalEmployees FROM employees'
   );
   const [payrollRows] = await pool.query(
-    'SELECT COALESCE(SUM(final_salary), 0) AS totalPayroll FROM payroll'
+    'SELECT COALESCE(SUM(final_salary), 0) AS totalPayroll FROM payroll_table'
   );
   const [leaveRows] = await pool.query(
     "SELECT COUNT(*) AS pendingLeaves FROM leave_requests WHERE status = 'Pending'"
@@ -62,10 +62,10 @@ export const getLeaveSummary = async () => {
     `SELECT status, COUNT(*) AS total FROM leave_requests GROUP BY status`
   );
   const [recentRows] = await pool.query(
-    `SELECT lr.request_id, e.name, lr.reason, lr.date, lr.status
+    `SELECT e.name, lr.reason, lr.date, lr.status
      FROM leave_requests lr
      INNER JOIN employees e ON e.employee_id = lr.employee_id
-     ORDER BY lr.date DESC, lr.request_id DESC
+     ORDER BY lr.date DESC
      LIMIT 10`
   );
 

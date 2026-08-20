@@ -1,4 +1,4 @@
-const db = require("../../config/db");
+import db from '../../config/db.js';
 
 
 // =====================================
@@ -237,7 +237,7 @@ const getDailyAttendanceStats = async () => {
 // EXPORT
 // =====================================
 
-module.exports = {
+export {
     getDailyAttendanceStats,
     getAttendanceStats,
     getAttendance,

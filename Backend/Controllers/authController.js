@@ -1,6 +1,6 @@
-const authModel = require("../models/authModel");
-const bcrypt = require("bcrypt");
-const jwt = require("jsonwebtoken");
+import * as authModel from '../models/authModel.js';
+import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
 
 const login = async (req, res) => {
     try {
@@ -70,6 +70,6 @@ const login = async (req, res) => {
     }
 };
 
-module.exports = {
+export {
     login
 };

@@ -11,17 +11,17 @@ export const getPayroll = async () => {
 export const getPayrollData = async () => {
   const query = `
   SELECT 
-  employees_table.employees_id AS employee_id,
-  employees_table.name,
-  employees_table.position,
-  employees_table.department,
-  employees_table.salary AS base_salary,
+  e.employee_id,
+  COALESCE(i.name, e.name) AS name,
+  i.position,
+  i.department,
+  i.salary AS base_salary,
   payroll_table.hours_worked,
   payroll_table.leave_deductions,
   payroll_table.final_salary
   FROM payroll_table
-  INNER JOIN employees_table 
-  ON payroll_table.employee_id = employees_table.employees_id;
+  INNER JOIN employees e ON payroll_table.employee_id = e.employee_id
+  LEFT JOIN employee_information i ON i.employee_id = e.employee_id;
   `;
   const [rows] = await db.query(query);
   return rows;
@@ -45,17 +45,17 @@ export const newPayrollData = async (employee_id, hours_worked, leave_deductions
 export const getSinglePayrollData = async (id) => {
   const query = `
   SELECT 
-  employees_table.employees_id AS employee_id,
-  employees_table.name,
-  employees_table.position,
-  employees_table.department,
-  employees_table.salary AS base_salary,
+  e.employee_id,
+  COALESCE(i.name, e.name) AS name,
+  i.position,
+  i.department,
+  i.salary AS base_salary,
   payroll_table.hours_worked,
   payroll_table.leave_deductions,
   payroll_table.final_salary
   FROM payroll_table
-  INNER JOIN employees_table 
-    ON payroll_table.employee_id = employees_table.employees_id
+  INNER JOIN employees e ON payroll_table.employee_id = e.employee_id
+  LEFT JOIN employee_information i ON i.employee_id = e.employee_id
   WHERE payroll_table.employee_id = ?;
   `;
   const [rows] = await db.query(query, [id]);
