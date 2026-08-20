@@ -1,49 +1,94 @@
-require('dotenv').config();
-const express = require('express');
-const cors = require('cors');
-const leaveRoutes = require('./Backend/routes/leaveRoutes2.0');
+import express from 'express';
+import cors from 'cors';
+import dotenv from 'dotenv';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
-const app = express();
+import pool from './config/db.js';
+import leaveRoutes from './Routes/leaveRoutes.js';
+import DashboardRoutes from './Routes/DashboardRoutes.js';
+import ReportsRoutes from './Routes/ReportsRoutes.js';
+
+dotenv.config({ quiet: true });
+
+export const app = express();
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const frontendRoot = path.resolve(__dirname, 'Frontend');
+
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: '1mb' }));
+
+app.get('/api/health', (req, res) => {
+  res.json({
+    status: 'ok',
+    service: 'HR Portal API',
+    timestamp: new Date().toISOString()
+  });
+});
+
 app.use('/api/timeoff', leaveRoutes);
+app.use('/api/dashboard', DashboardRoutes);
+app.use('/api/reports', ReportsRoutes);
 
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Node + SQL server running on http://localhost:${PORT}`));
-require("dotenv").config();
+app.use(express.static(frontendRoot));
 
-const express = require("express");
-const cors = require("cors");
+app.get('/', (req, res) => {
+  res.sendFile(path.join(frontendRoot, 'index.html'));
+});
 
-const app = express();
+app.use((error, req, res, _next) => {
+  if (error.type === 'entity.parse.failed') {
+    return res.status(400).json({ error: 'Request body must contain valid JSON.' });
+  }
 
-const PORT = 3000;
+  if (error.type === 'entity.too.large') {
+    return res.status(413).json({ error: 'Request body is too large.' });
+  }
 
-// Middleware
-app.use(cors());
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+  console.error('Unhandled request error:', error.message);
+  res.status(500).json({ error: 'Internal server error.' });
+});
 
-// Authentication routes
-const authRoutes = require("./Backend/routes/authRoutes");
-app.use("/api/auth", authRoutes);
+export function startServer(port = process.env.PORT || 3000) {
+  const parsedPort = Number(port);
+  if (!Number.isInteger(parsedPort) || parsedPort < 0 || parsedPort > 65535) {
+    throw new Error('PORT must be an integer between 0 and 65535.');
+  }
 
-// Attendance routes
-const attendanceRoutes = require("./Backend/routes/attendanceRoutes");
-app.use("/api/attendance", attendanceRoutes);
+  const server = app.listen(parsedPort, () => {
+    console.log(`HR Portal API listening on port ${parsedPort}`);
+  });
 
-// Leave routes
-const leaveRoutes = require("./Backend/routes/leaveRoutes2.0");
-app.use("/api/leave", leaveRoutes);
+  server.on('error', (error) => {
+    console.error('HTTP server error:', error.message);
+    process.exitCode = 1;
+  });
 
-// Test route
-app.get("/", (req, res) => {
-    res.json({
-        message: "HR Portal API is running"
+  pool.getConnection()
+    .then((connection) => {
+      connection.release();
+      console.log('MySQL database connected successfully.');
+    })
+    .catch((error) => {
+      console.error('Unable to connect to MySQL database:', error.message);
     });
-});
 
-// Start server
-app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
-});
+  return server;
+}
+
+if (process.argv[1] && path.resolve(process.argv[1]) === __filename) {
+  const server = startServer();
+
+  const shutdown = (signal) => {
+    console.log(`${signal} received; shutting down.`);
+    server.close(() => {
+      pool.end()
+        .catch((error) => console.error('Error closing MySQL pool:', error.message))
+        .finally(() => process.exit(0));
+    });
+  };
+
+  process.once('SIGINT', () => shutdown('SIGINT'));
+  process.once('SIGTERM', () => shutdown('SIGTERM'));
+}
