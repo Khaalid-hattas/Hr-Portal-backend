@@ -6,42 +6,60 @@ const attendanceController =
     require("../Controllers/attendanceController");
 
 
-// Get all attendance
+// =====================================
+// GET ALL ATTENDANCE
+// =====================================
+
 router.get(
     "/",
     attendanceController.getAttendance
 );
 
 
-// Get attendance for one employee
+// =====================================
+// GET EMPLOYEE ATTENDANCE
+// =====================================
+
 router.get(
     "/employee/:id",
     attendanceController.getEmployeeAttendance
 );
 
 
-// Create attendance
+// =====================================
+// CREATE ATTENDANCE
+// =====================================
+
 router.post(
     "/",
     attendanceController.createAttendance
 );
 
 
-// Update attendance
+// =====================================
+// UPDATE ATTENDANCE
+// =====================================
+
 router.put(
     "/:id",
     attendanceController.updateAttendance
 );
 
 
-// Delete attendance
+// =====================================
+// DELETE ATTENDANCE
+// =====================================
+
 router.delete(
     "/:id",
     attendanceController.deleteAttendance
 );
 
 
-// Attendance statistics
+// =====================================
+// ATTENDANCE STATISTICS
+// =====================================
+
 router.get(
     "/stats",
     attendanceController.getAttendanceStats

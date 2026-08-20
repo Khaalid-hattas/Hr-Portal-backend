@@ -5,7 +5,9 @@
 let attendanceEmployees = [];
 
 const attendanceTableBody =
-    document.getElementById("attendanceTableBody");
+    document.getElementById(
+        "attendanceTableBody"
+    );
 
 
 /*=====================================
@@ -17,7 +19,9 @@ async function loadAttendanceTable() {
     try {
 
         const attendanceResponse =
-            await fetch("http://localhost:3000/api/attendance");
+            await fetch(
+                "http://localhost:3000/api/attendance"
+            );
 
 
         if (!attendanceResponse.ok) {
@@ -39,12 +43,9 @@ async function loadAttendanceTable() {
         );
 
 
-        /*
-        Try to load leave data.
-
-        If leave fails, the attendance table
-        will still work.
-        */
+        /*=====================================
+            LOAD LEAVE DATA
+        =====================================*/
 
         let leaveData = [];
 
@@ -74,38 +75,43 @@ async function loadAttendanceTable() {
         }
 
 
-        /*
-        Combine attendance and leave data
-        */
+        /*=====================================
+            COMBINE ATTENDANCE + LEAVE
+        =====================================*/
 
         attendanceEmployees =
-            attendanceData.map(attendance => {
+            attendanceData.map(
+                attendance => {
+
+                    const employeeLeaves =
+                        leaveData.filter(
+                            leave =>
+
+                                Number(
+                                    leave.employee_id
+                                ) ===
+                                Number(
+                                    attendance.employee_id
+                                )
+                        );
 
 
-                const employeeLeaves =
-                    leaveData.filter(leave =>
+                    return {
 
-                        Number(leave.employee_id) ===
-                        Number(attendance.employee_id)
+                        ...attendance,
 
-                    );
+                        leaveRequests:
+                            employeeLeaves
 
+                    };
 
-                return {
-
-                    ...attendance,
-
-                    leaveRequests:
-                        employeeLeaves
-
-                };
-
-            });
+                }
+            );
 
 
-        /*
-        Display table
-        */
+        /*=====================================
+            DISPLAY TABLE
+        =====================================*/
 
         displayAttendanceTable(
             attendanceEmployees
@@ -113,7 +119,6 @@ async function loadAttendanceTable() {
 
 
     } catch (error) {
-
 
         console.error(
             "Error loading attendance:",
@@ -148,8 +153,9 @@ async function loadAttendanceTable() {
     DISPLAY ATTENDANCE TABLE
 =====================================*/
 
-function displayAttendanceTable(employeeList) {
-
+function displayAttendanceTable(
+    employeeList
+) {
 
     if (!attendanceTableBody) {
 
@@ -189,310 +195,289 @@ function displayAttendanceTable(employeeList) {
     }
 
 
-    employeeList.forEach(employee => {
+    employeeList.forEach(
+        employee => {
+
+            const employeeName =
+                employee.employee_name ||
+                "Unknown";
 
 
-        /*=====================================
-            EMPLOYEE INFORMATION
-        =====================================*/
-
-        const employeeName =
-            employee.employee_name ||
-            "Unknown";
+            const employeeId =
+                employee.employee_id ||
+                "-";
 
 
-        const employeeId =
-            employee.employee_id ||
-            "-";
+            const date =
+                employee.date
+                    ? new Date(
+                        employee.date
+                    ).toLocaleDateString()
+                    : "-";
 
 
-        const date =
-            employee.date
-                ? new Date(
-                    employee.date
-                ).toLocaleDateString()
-                : "-";
+            const attendanceStatus =
+                employee.status ||
+                "-";
 
 
-        const attendanceStatus =
-            employee.status ||
-            "-";
+            /*=====================================
+                LEAVE INFORMATION
+            =====================================*/
+
+            const leaveRequests =
+                employee.leaveRequests ||
+                [];
 
 
-        /*=====================================
-            LEAVE INFORMATION
-        =====================================*/
+            let leaveReason = "-";
 
-        const leaveRequests =
-            employee.leaveRequests ||
-            [];
+            let leaveStatus = "-";
 
 
-        let leaveReason = "-";
+            if (
+                leaveRequests.length > 0
+            ) {
 
-        let leaveStatus = "-";
+                leaveReason =
+                    leaveRequests
+                        .map(
+                            leave =>
+                                leave.reason ||
+                                "-"
+                        )
+                        .join("<br>");
 
 
-        if (
-            leaveRequests.length > 0
-        ) {
+                leaveStatus =
+                    leaveRequests
+                        .map(
+                            leave =>
+                                leave.status ||
+                                "-"
+                        )
+                        .join("<br>");
+
+            }
 
 
-            leaveReason =
-                leaveRequests
+            /*=====================================
+                EMPLOYEE INITIALS
+            =====================================*/
+
+            const initials =
+                employeeName
+                    .split(" ")
+                    .filter(Boolean)
                     .map(
-                        leave =>
-                            leave.reason || "-"
+                        name =>
+                            name.charAt(0)
                     )
-                    .join("<br>");
+                    .join("")
+                    .substring(0, 2)
+                    .toUpperCase();
 
 
-            leaveStatus =
-                leaveRequests
-                    .map(
-                        leave =>
-                            leave.status || "-"
-                    )
-                    .join("<br>");
+            /*=====================================
+                ATTENDANCE STATUS CLASS
+            =====================================*/
 
-        }
+            let attendanceClass = "";
 
 
-        /*=====================================
-            EMPLOYEE INITIALS
-        =====================================*/
+            if (
+                attendanceStatus
+                    .toLowerCase() ===
+                "present"
+            ) {
 
-        const initials = employeeName
+                attendanceClass =
+                    "attendance-present";
 
-            .split(" ")
+            }
 
-            .filter(Boolean)
+            else if (
+                attendanceStatus
+                    .toLowerCase() ===
+                "absent"
+            ) {
 
-            .map(
-                name =>
-                    name.charAt(0)
-            )
+                attendanceClass =
+                    "attendance-absent";
 
-            .join("")
+            }
 
-            .substring(0, 2)
+            else if (
+                attendanceStatus
+                    .toLowerCase() ===
+                "late"
+            ) {
 
-            .toUpperCase();
+                attendanceClass =
+                    "attendance-pending";
 
-
-        /*=====================================
-            ATTENDANCE STATUS CLASS
-        =====================================*/
-
-        let attendanceClass = "";
-
-
-        if (
-            attendanceStatus
-                .toLowerCase() ===
-            "present"
-        ) {
-
-            attendanceClass =
-                "attendance-present";
-
-        }
+            }
 
 
-        else if (
-            attendanceStatus
-                .toLowerCase() ===
-            "absent"
-        ) {
+            /*=====================================
+                LEAVE STATUS CLASS
+            =====================================*/
 
-            attendanceClass =
-                "attendance-absent";
-
-        }
+            let leaveClass = "";
 
 
-        else if (
-            attendanceStatus
-                .toLowerCase() ===
-            "late"
-        ) {
-
-            attendanceClass =
-                "attendance-pending";
-
-        }
+            const lowerLeaveStatus =
+                leaveStatus.toLowerCase();
 
 
-        /*=====================================
-            LEAVE STATUS CLASS
-        =====================================*/
+            if (
+                lowerLeaveStatus.includes(
+                    "approved"
+                )
+            ) {
 
-        let leaveClass = "";
+                leaveClass =
+                    "attendance-present";
 
+            }
 
-        const lowerLeaveStatus =
-            leaveStatus.toLowerCase();
+            else if (
+                lowerLeaveStatus.includes(
+                    "denied"
+                )
+            ) {
 
+                leaveClass =
+                    "attendance-absent";
 
-        if (
-            lowerLeaveStatus.includes(
-                "approved"
-            )
-        ) {
+            }
 
-            leaveClass =
-                "attendance-present";
+            else if (
+                lowerLeaveStatus.includes(
+                    "pending"
+                )
+            ) {
 
-        }
+                leaveClass =
+                    "attendance-pending";
 
-
-        else if (
-            lowerLeaveStatus.includes(
-                "denied"
-            )
-        ) {
-
-            leaveClass =
-                "attendance-absent";
-
-        }
-
-
-        else if (
-            lowerLeaveStatus.includes(
-                "pending"
-            )
-        ) {
-
-            leaveClass =
-                "attendance-pending";
-
-        }
+            }
 
 
-        /*=====================================
-            CREATE TABLE ROW
-        =====================================*/
+            /*=====================================
+                CREATE TABLE ROW
+            =====================================*/
 
-        attendanceTableBody.innerHTML += `
+            attendanceTableBody.innerHTML += `
 
-            <tr>
+                <tr>
 
+                    <td>
 
-                <!-- Employee -->
-
-                <td>
-
-                    <div
-                        class="attendance-employee"
-                        onclick="showAttendanceHistory(
-                            ${employeeId}
-                        )"
-                    >
-
-                        <div class="attendance-avatar">
-
-                            ${initials}
-
-                        </div>
-
-
-                        <div>
+                        <div
+                            class="attendance-employee"
+                            onclick="
+                                showAttendanceHistory(
+                                    ${employeeId}
+                                )
+                            "
+                        >
 
                             <div
-                                class="attendance-name"
+                                class="attendance-avatar"
                             >
 
-                                ${employeeName}
+                                ${initials}
 
                             </div>
 
 
-                            <div
-                                class="attendance-subtitle"
-                            >
+                            <div>
 
-                                Employee
+                                <div
+                                    class="attendance-name"
+                                >
+
+                                    ${employeeName}
+
+                                </div>
+
+
+                                <div
+                                    class="attendance-subtitle"
+                                >
+
+                                    Employee
+
+                                </div>
 
                             </div>
 
                         </div>
 
-                    </div>
-
-                </td>
+                    </td>
 
 
-                <!-- Employee ID -->
+                    <td>
 
-                <td>
+                        EMP-${String(
+                            employeeId
+                        ).padStart(3, "0")}
 
-                    EMP-${String(
-                        employeeId
-                    ).padStart(3, "0")}
-
-                </td>
+                    </td>
 
 
-                <!-- Date -->
+                    <td>
 
-                <td>
+                        ${date}
 
-                    ${date}
-
-                </td>
+                    </td>
 
 
-                <!-- Attendance -->
+                    <td>
 
-                <td>
+                        <span
+                            class="
+                                attendance-status
+                                ${attendanceClass}
+                            "
+                        >
 
-                    <span
-                        class="
-                            attendance-status
-                            ${attendanceClass}
-                        "
-                    >
+                            ${attendanceStatus}
 
-                        ${attendanceStatus}
+                        </span>
 
-                    </span>
-
-                </td>
+                    </td>
 
 
-                <!-- Leave Reason -->
+                    <td>
 
-                <td>
+                        ${leaveReason}
 
-                    ${leaveReason}
-
-                </td>
+                    </td>
 
 
-                <!-- Leave Status -->
+                    <td>
 
-                <td>
+                        <span
+                            class="
+                                attendance-status
+                                ${leaveClass}
+                            "
+                        >
 
-                    <span
-                        class="
-                            attendance-status
-                            ${leaveClass}
-                        "
-                    >
+                            ${leaveStatus}
 
-                        ${leaveStatus}
+                        </span>
 
-                    </span>
+                    </td>
 
-                </td>
+                </tr>
 
+            `;
 
-            </tr>
-
-        `;
-
-    });
+        }
+    );
 
 }
 
@@ -505,10 +490,10 @@ function showAttendanceHistory(
     employeeId
 ) {
 
-
     const employeeRecords =
         attendanceEmployees.filter(
             employee =>
+
                 Number(
                     employee.employee_id
                 ) ===
@@ -565,7 +550,6 @@ function showAttendanceHistory(
     employeeRecords.forEach(
         record => {
 
-
             let attendanceClass = "";
 
 
@@ -580,7 +564,6 @@ function showAttendanceHistory(
 
             }
 
-
             else if (
                 String(record.status)
                     .toLowerCase() ===
@@ -591,7 +574,6 @@ function showAttendanceHistory(
                     "attendance-absent";
 
             }
-
 
             else if (
                 String(record.status)
@@ -611,10 +593,7 @@ function showAttendanceHistory(
 
                     <td>
 
-                        ${
-                            record.date ||
-                            "-"
-                        }
+                        ${record.date || "-"}
 
                     </td>
 
@@ -628,10 +607,7 @@ function showAttendanceHistory(
                             "
                         >
 
-                            ${
-                                record.status ||
-                                "-"
-                            }
+                            ${record.status || "-"}
 
                         </span>
 
@@ -642,7 +618,6 @@ function showAttendanceHistory(
             `;
 
         }
-
     );
 
 
@@ -668,7 +643,6 @@ function showAttendanceHistory(
 
 function closeAttendanceHistory() {
 
-
     const modal =
         document.getElementById(
             "attendanceHistoryModal"
@@ -691,32 +665,107 @@ function closeAttendanceHistory() {
 
 async function loadAttendanceStats() {
 
-    const chart = document.querySelector(
-        ".attendance-chart-card .chart"
-    );
+    const chart =
+        document.querySelector(
+            ".attendance-chart-card .chart"
+        );
 
-    // Clear chart immediately
+
+    const dailyLogBody =
+        document.getElementById(
+            "dailyLogBody"
+        );
+
+
+    /*
+        Clear old frontend/hard-coded data.
+        If backend is unavailable, nothing
+        will be displayed.
+    */
+
     if (chart) {
+
         chart.innerHTML = "";
+
     }
+
+
+    if (dailyLogBody) {
+
+        dailyLogBody.innerHTML = "";
+
+    }
+
 
     try {
 
-        const response = await fetch(
-            "http://localhost:3000/api/attendance/stats"
-        );
+        const response =
+            await fetch(
+                "http://localhost:3000/api/attendance/stats"
+            );
+
 
         if (!response.ok) {
-            throw new Error("Backend unavailable");
+
+            throw new Error(
+                "Backend unavailable"
+            );
+
         }
 
-        const data = await response.json();
 
-        // Cards stay connected
-        displayAttendanceCards(data.cards || {});
+        const data =
+            await response.json();
 
-        // Chart gets backend data
-        displayAttendanceChart(data.daily || []);
+
+        console.log(
+            "Attendance statistics:",
+            data
+        );
+
+
+        /*=====================================
+            CARDS
+        =====================================*/
+
+        displayAttendanceCards(
+            data.cards || {}
+        );
+
+
+        /*=====================================
+            DAILY DATA
+        =====================================*/
+
+        const dailyData =
+            Array.isArray(data.daily)
+                ? data.daily
+                : [];
+
+
+        console.log(
+            "Daily attendance:",
+            dailyData
+        );
+
+
+        /*=====================================
+            CHART
+        =====================================*/
+
+        displayAttendanceChart(
+            dailyData
+        );
+
+
+        /*=====================================
+            DAILY LOG
+        =====================================*/
+
+        displayDailyLog(
+            dailyData
+        );
+
 
     } catch (error) {
 
@@ -725,12 +774,29 @@ async function loadAttendanceStats() {
             error
         );
 
-        // Backend is OFF → remove everything
+
+        /*
+            Backend OFF:
+            keep chart and daily log empty.
+        */
+
         if (chart) {
+
             chart.innerHTML = "";
+
         }
+
+
+        if (dailyLogBody) {
+
+            dailyLogBody.innerHTML = "";
+
+        }
+
     }
+
 }
+
 
 /*=====================================
     ATTENDANCE CARDS
@@ -739,7 +805,6 @@ async function loadAttendanceStats() {
 function displayAttendanceCards(
     cards
 ) {
-
 
     const avgPresent =
         document.getElementById(
@@ -789,91 +854,185 @@ function displayAttendanceCards(
     ATTENDANCE CHART
 =====================================*/
 
-function displayAttendanceChart(dailyData) {
+function displayAttendanceChart(
+    dailyData
+) {
 
-    const chart = document.querySelector(
-        ".attendance-chart-card .chart"
-    );
+    const chart =
+        document.querySelector(
+            ".attendance-chart-card .chart"
+        );
+
 
     if (!chart) {
+
+        console.error(
+            "Chart element not found"
+        );
+
         return;
+
     }
 
-    // Always clear the chart first
+
     chart.innerHTML = "";
 
-    // No backend data = no bars
-    if (!dailyData || dailyData.length === 0) {
+
+    /*
+        No backend data =
+        no bars.
+    */
+
+    if (
+        !Array.isArray(dailyData) ||
+        dailyData.length === 0
+    ) {
+
         return;
+
     }
 
-    dailyData.forEach(day => {
 
-        const present = Number(day.present) || 0;
-        const absent = Number(day.absent) || 0;
-        const late = Number(day.late) || 0;
+    /*
+        Show every day returned by
+        the backend.
 
-        const total = present + absent + late;
+        Backend currently returns up
+        to 7 days.
+    */
 
-        if (total === 0) {
-            return;
-        }
+    dailyData
+        .slice()
+        .reverse()
+        .forEach(
+            day => {
 
-        const presentHeight =
-            (present / total) * 100;
+                const present =
+                    Number(day.present) || 0;
 
-        const absentHeight =
-            (absent / total) * 100;
 
-        const lateHeight =
-            (late / total) * 100;
+                const absent =
+                    Number(day.absent) || 0;
 
-        chart.innerHTML += `
-            <div class="day">
 
-                <div class="bars">
+                const late =
+                    Number(day.late) || 0;
 
-                    <div
-                        class="bar present"
-                        style="height:${presentHeight}%"
-                    ></div>
 
-                    <div
-                        class="bar absent"
-                        style="height:${absentHeight}%"
-                    ></div>
+                /*
+                    Use one consistent maximum
+                    for all days.
 
-                    <div
-                        class="bar late"
-                        style="height:${lateHeight}%"
-                    ></div>
+                    This makes the bars comparable.
+                */
 
-                </div>
+                const maxValue =
+                    Math.max(
+                        10,
+                        ...dailyData.map(
+                            item => Math.max(
+                                Number(item.present) || 0,
+                                Number(item.absent) || 0,
+                                Number(item.late) || 0
+                            )
+                        )
+                    );
 
-                <p>${day.date}</p>
 
-            </div>
-        `;
-    });
+                const presentHeight =
+                    Math.max(
+                        0,
+                        (present / maxValue) * 100
+                    );
+
+
+                const absentHeight =
+                    Math.max(
+                        0,
+                        (absent / maxValue) * 100
+                    );
+
+
+                const lateHeight =
+                    Math.max(
+                        0,
+                        (late / maxValue) * 100
+                    );
+
+
+                const dayLabel =
+                    day.date ||
+                    day.raw_date ||
+                    "-";
+
+
+                chart.innerHTML += `
+
+                    <div class="day">
+
+                        <div class="bars">
+
+                            <div
+                                class="bar present"
+                                style="
+                                    height:
+                                    ${presentHeight}%;
+                                "
+                                title="
+                                    Present: ${present}
+                                "
+                            ></div>
+
+
+                            <div
+                                class="bar absent"
+                                style="
+                                    height:
+                                    ${absentHeight}%;
+                                "
+                                title="
+                                    Absent: ${absent}
+                                "
+                            ></div>
+
+
+                            <div
+                                class="bar late"
+                                style="
+                                    height:
+                                    ${lateHeight}%;
+                                "
+                                title="
+                                    Late: ${late}
+                                "
+                            ></div>
+
+                        </div>
+
+
+                        <p>
+
+                            ${dayLabel}
+
+                        </p>
+
+                    </div>
+
+                `;
+
+            }
+        );
+
 }
+
+
 /*=====================================
-    BOTTOM TABLE
+    DAILY LOG TABLE
 =====================================*/
 
 function displayDailyLog(
     dailyData
 ) {
-
-
-    /*
-    IMPORTANT:
-
-    If your bottom table doesn't have
-    id="dailyLogBody", nothing happens.
-
-    Therefore your existing bottom table
-    remains untouched.
-    */
 
     const dailyLogBody =
         document.getElementById(
@@ -883,6 +1042,10 @@ function displayDailyLog(
 
     if (!dailyLogBody) {
 
+        console.error(
+            "dailyLogBody not found"
+        );
+
         return;
 
     }
@@ -891,9 +1054,23 @@ function displayDailyLog(
     dailyLogBody.innerHTML = "";
 
 
+    /*
+        No backend data =
+        no rows.
+    */
+
+    if (
+        !Array.isArray(dailyData) ||
+        dailyData.length === 0
+    ) {
+
+        return;
+
+    }
+
+
     dailyData.forEach(
         day => {
-
 
             const present =
                 Number(day.present) || 0;
@@ -924,9 +1101,16 @@ function displayDailyLog(
                             ) /
                             total
                         ) * 100
+
                     ).toFixed(1)
 
-                    : 0;
+                    : "0.0";
+
+
+            const dayLabel =
+                day.date ||
+                day.raw_date ||
+                "-";
 
 
             dailyLogBody.innerHTML += `
@@ -937,7 +1121,7 @@ function displayDailyLog(
 
                     <td>
 
-                        ${day.date}
+                        ${dayLabel}
 
                     </td>
 
@@ -971,7 +1155,6 @@ function displayDailyLog(
 
                     <td>
 
-
                         <div
                             class="progress"
                         >
@@ -994,145 +1177,210 @@ function displayDailyLog(
 
                         </span>
 
-
                     </td>
-
 
                 </tr>
 
             `;
 
         }
-
     );
 
 }
 
 
 /*=====================================
-    DARK MODE
+    FILTERS
 =====================================*/
 
-document.addEventListener(
-    "DOMContentLoaded",
-    function () {
+function applyAttendanceFilters() {
+
+    const searchInput =
+        document.getElementById(
+            "attendanceSearchInput"
+        );
 
 
-        const themeToggle =
-            document.getElementById(
-                "darkModeToggle"
-            );
+    const dateFilter =
+        document.getElementById(
+            "attendanceDateFilter"
+        );
 
 
-        const toggleText =
-            document.getElementById(
-                "toggleText"
-            );
+    const statusFilter =
+        document.getElementById(
+            "attendanceStatusFilter"
+        );
 
 
-        const isDarkMode =
-            localStorage.getItem(
-                "darkMode"
-            ) === "true";
+    const searchValue =
+        searchInput
+            ? searchInput.value
+                .toLowerCase()
+                .trim()
+            : "";
 
 
-        if (isDarkMode) {
+    const dateValue =
+        dateFilter
+            ? dateFilter.value
+            : "";
 
-            document.body.classList.add(
-                "dark-mode"
-            );
+
+    const statusValue =
+        statusFilter
+            ? statusFilter.value
+            : "All";
 
 
-            if (themeToggle) {
+    const filteredEmployees =
+        attendanceEmployees.filter(
+            employee => {
 
-                themeToggle.classList.add(
-                    "dark-mode"
+                const name =
+                    String(
+                        employee.employee_name ||
+                        ""
+                    ).toLowerCase();
+
+
+                const employeeId =
+                    String(
+                        employee.employee_id ||
+                        ""
+                    );
+
+
+                const employeeDate =
+                    employee.date
+                        ? new Date(
+                            employee.date
+                        )
+                            .toISOString()
+                            .split("T")[0]
+
+                        : "";
+
+
+                const employeeStatus =
+                    String(
+                        employee.status ||
+                        ""
+                    );
+
+
+                const matchesSearch =
+
+                    name.includes(
+                        searchValue
+                    )
+
+                    ||
+
+                    employeeId.includes(
+                        searchValue
+                    );
+
+
+                const matchesDate =
+
+                    !dateValue ||
+
+                    employeeDate ===
+                    dateValue;
+
+
+                const matchesStatus =
+
+                    statusValue ===
+                    "All"
+
+                    ||
+
+                    employeeStatus.toLowerCase() ===
+                    statusValue.toLowerCase();
+
+
+                return (
+
+                    matchesSearch &&
+
+                    matchesDate &&
+
+                    matchesStatus
+
                 );
 
             }
+        );
 
 
-            if (toggleText) {
+    displayAttendanceTable(
+        filteredEmployees
+    );
 
-                toggleText.textContent =
-                    "Light Mode";
-
-            }
-
-        }
-
-
-        if (themeToggle) {
-
-
-            themeToggle.addEventListener(
-                "click",
-                function () {
-
-
-                    document.body.classList.toggle(
-                        "dark-mode"
-                    );
-
-
-                    themeToggle.classList.toggle(
-                        "dark-mode"
-                    );
-
-
-                    const isDark =
-                        document.body.classList.contains(
-                            "dark-mode"
-                        );
-
-
-                    localStorage.setItem(
-                        "darkMode",
-                        isDark
-                    );
-
-
-                    if (toggleText) {
-
-                        toggleText.textContent =
-                            isDark
-                                ? "Light Mode"
-                                : "Dark Mode";
-
-                    }
-
-                }
-
-            );
-
-        }
-
-    }
-
-);
+}
 
 
 /*=====================================
-    START EVERYTHING
+    INITIALISE PAGE
 =====================================*/
 
 document.addEventListener(
     "DOMContentLoaded",
     function () {
 
-
-        /*
-        Load employee attendance table
-        */
-
         loadAttendanceTable();
 
-
-        /*
-        Load cards + chart
-        */
-
         loadAttendanceStats();
+
+
+        const searchInput =
+            document.getElementById(
+                "attendanceSearchInput"
+            );
+
+
+        if (searchInput) {
+
+            searchInput.addEventListener(
+                "input",
+                applyAttendanceFilters
+            );
+
+        }
+
+
+        const dateFilter =
+            document.getElementById(
+                "attendanceDateFilter"
+            );
+
+
+        if (dateFilter) {
+
+            dateFilter.addEventListener(
+                "change",
+                applyAttendanceFilters
+            );
+
+        }
+
+
+        const statusFilter =
+            document.getElementById(
+                "attendanceStatusFilter"
+            );
+
+
+        if (statusFilter) {
+
+            statusFilter.addEventListener(
+                "change",
+                applyAttendanceFilters
+            );
+
+        }
 
     }
 );
