@@ -143,10 +143,10 @@ const getAttendanceStats = async (req, res) => {
 
 
 module.exports = {
-    getAttendanceStats,
     getAttendance,
     getEmployeeAttendance,
     createAttendance,
     updateAttendance,
-    deleteAttendance
+    deleteAttendance,
+    getAttendanceStats
 };
