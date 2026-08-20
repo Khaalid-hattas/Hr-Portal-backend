@@ -11,7 +11,6 @@ import employeesRouter from './routers/employeesRouter.js';
 
 import payrollRouter from './routers/payrollRouter.js';
 
-//import payrollRoutes from '/routers/payrollRouter.js';
 
 dotenv.config();
 

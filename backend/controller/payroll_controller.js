@@ -1,4 +1,3 @@
-import { db } from "../config/payroll_config.js";
 import { getPayroll, getPayrollData, newPayrollData,getSinglePayrollData } from "../model/payroll_db.js";
 
 import { getEmployeesInfo } from "../model/employees_db.js";
@@ -85,6 +84,7 @@ export const getSinglePayrollCon = async (req, res) => {
   try {
     const { id } = req.params;
     const payroll = await getSinglePayrollData(id);
+    console.log(`[SERVER LOG]: Fetching payslip data for employee ID: ${id}`);
 
     if (!payroll) {
       return res.status(404).json({ error: "Payroll record not found" });
