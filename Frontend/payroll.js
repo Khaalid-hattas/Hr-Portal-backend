@@ -1,7 +1,7 @@
 // NO hardcoded data - ONLY uses the database API.
 
 let currentemployee = null;
-const API_BASE_URL = "http://localhost:1800";
+const API_BASE_URL = "http://localhost:3000";
 
 // ============================================================
 // CONNECTION BANNER FUNCTIONS
@@ -32,7 +32,7 @@ function showConnectionBanner() {
     banner.innerHTML = `
         <i class="bi bi-exclamation-triangle-fill me-2"></i>
         <strong>Connecting to server...</strong>
-        <span class="ms-2">Please ensure the backend server is running on http://localhost:1800</span>
+        <span class="ms-2">Please ensure the backend server is running on http://localhost:3000</span>
         <button class="btn btn-sm btn-outline-dark ms-3" onclick="location.reload()">
             <i class="bi bi-arrow-clockwise"></i> Retry
         </button>
@@ -244,15 +244,14 @@ function updatePayrollCards(payrollData) {
         0,
     );
     
-    const deductionsValue = payrollData.reduce(
-        (sum, item) => sum + Number(item.leaveDeductions || 0),
-        0,
-    );
-    
     const netValue = payrollData.reduce(
         (sum, item) => sum + Number(item.finalSalary || 0),
         0,
     );
+
+    // leaveDeductions contains leave hours/days, not a currency amount.
+    // The monetary deduction is the difference between gross and net pay.
+    const deductionsValue = Math.max(0, grossValue - netValue);
 
     const grossElement = document.getElementById("grossPayrollValue");
     const deductionsElement = document.getElementById("deductionsPayrollValue");

@@ -59,7 +59,7 @@ async function loadTimeOffData() {
 
     try {
 
-        const response = await fetch("http://localhost:3000/api/timeoff");
+        const response = await fetch("http://localhost:3000/api/leave");
 
         if (!response.ok) {
             throw new Error(`API error: ${response.status} ${response.statusText}`);
@@ -311,7 +311,7 @@ data-id="${request.id}">
             try {
 
                 const res = await fetch(
-                    `http://localhost:3000/api/timeoff/${btn.dataset.id}`,
+                    `http://localhost:3000/api/leave/${btn.dataset.id}`,
                     {
                         method:  "PATCH",
                         headers: { "Content-Type": "application/json" },
@@ -344,7 +344,7 @@ data-id="${request.id}">
             try {
 
                 const res = await fetch(
-                    `http://localhost:3000/api/timeoff/${btn.dataset.id}`,
+                    `http://localhost:3000/api/leave/${btn.dataset.id}`,
                     {
                         method:  "PATCH",
                         headers: { "Content-Type": "application/json" },
@@ -376,7 +376,7 @@ data-id="${request.id}">
             try {
 
                 const res = await fetch(
-                    `http://localhost:3000/api/timeoff/${btn.dataset.id}`,
+                    `http://localhost:3000/api/leave/${btn.dataset.id}`,
                     {
                         method:  "PATCH",
                         headers: { "Content-Type": "application/json" },

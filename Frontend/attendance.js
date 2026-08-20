@@ -83,17 +83,28 @@ async function loadAttendanceTable() {
             attendanceData.map(
                 attendance => {
 
-                    const employeeLeaves =
-                        leaveData.filter(
-                            leave =>
-
-                                Number(
-                                    leave.employee_id
-                                ) ===
-                                Number(
-                                    attendance.employee_id
+                    const employeeLeaves = Array.from(
+                        new Map(
+                            leaveData
+                                .filter(
+                                    leave =>
+                                        Number(leave.employee_id) ===
+                                        Number(attendance.employee_id)
                                 )
-                        );
+                                .map(leave => [
+                                    leave.request_id ??
+                                        [
+                                            leave.employee_id,
+                                            leave.leave_type,
+                                            leave.start_date,
+                                            leave.end_date,
+                                            leave.reason,
+                                            leave.status,
+                                        ].join("|") ,
+                                    leave,
+                                ])
+                        ).values()
+                    );
 
 
                     return {
