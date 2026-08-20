@@ -3,19 +3,15 @@ USE `moderntech-hr-backend-project` ;
 
 -- the employees_table
 CREATE TABLE `moderntech-hr-backend-project`.`employees_table` (
-  `employees_id` INT NOT NULL AUTO_INCREMENT,
-  `name` VARCHAR(225) NULL,
-  `position` VARCHAR(225) NULL,
-  `department` VARCHAR(55) NULL,
-  `salary` DECIMAL(10) NULL,
+`employees_id` INT NOT NULL AUTO_INCREMENT,
+  `name` VARCHAR(225) NOT NULL,
+  `position` VARCHAR(225) NOT NULL,
+  `department` VARCHAR(55) NOT NULL,
+  `salary` DECIMAL(10,2) NOT NULL,
   `employmentHistory` VARCHAR(225) NULL,
   `contact` VARCHAR(225) NULL,
-  PRIMARY KEY (`employees_id`),
-  CONSTRAINT `emp_id`
-    FOREIGN KEY (`employees_id`)
-    REFERENCES `moderntech-hr-backend-project`.`payroll_table` (`employee_id`)
-    ON DELETE CASCADE
-    ON UPDATE CASCADE);
+  PRIMARY KEY (`employees_id`)
+);
     
 INSERT INTO `moderntech-hr-backend-project`.`employees_table` (`name`, `position`, `department`, `salary`, `employmentHistory`, `contact`) 
 VALUES 
@@ -35,27 +31,39 @@ VALUES
 -- the the payroll_table
 CREATE TABLE `moderntech-hr-backend-project`.`payroll_table` (
   `employee_id` INT NOT NULL AUTO_INCREMENT,
-  `hours_worked` DECIMAL(10) NULL,
-  `leave_deductions` DECIMAL(10) NULL,
-  `final_salary` DECIMAL(10) NULL,
-  PRIMARY KEY (`employee_id`));
+  `hours_worked` DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+  `leave_deductions` DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+  `final_salary` DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+  PRIMARY KEY (`employee_id`),
+  CONSTRAINT `fk_employee_id`
+    FOREIGN KEY (`employee_id`)
+    REFERENCES `employees_table` (`employees_id`)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE
+);
+ 
   
-  INSERT INTO `moderntech-hr-backend-project`.`payroll_table` (`hours_worked`, `leave_deductions`, `final_salary`) 
-  VALUES 
-  ('160', '792', '69500'),
-  ('150', '650', '79000'),
-  ('170', '600', '54800'),
-  ('165', '708', '59700'),
-  ('158', '917', '57850'),
-  ('168', '917', '64800'),
-  ('175', '917', '71800'),
-  ('160', '917', '56000'),
-  ('155', '917', '61500'),
-  ('162', '917', '57750');
-  
-select * from employees_table;
-alter table employees_table add unique(contact);
-alter table employees_table add column `status` varchar(20) default 'active';
+INSERT INTO `moderntech-hr-backend-project`.`payroll_table` (`employee_id`, `hours_worked`, `leave_deductions`, `final_salary`) 
+VALUES 
+(1, 160.00, 792.00, 69500.00),
+(2, 150.00, 650.00, 79000.00),
+(3, 170.00, 600.00, 54800.00),
+(4, 165.00, 708.00, 59700.00),
+(5, 158.00, 917.00, 57850.00),
+(6, 168.00, 917.00, 64800.00),
+(7, 175.00, 917.00, 71800.00),
+(8, 160.00, 917.00, 56000.00),
+(9, 155.00, 917.00, 61500.00),
+(10, 162.00, 917.00, 57750.00);
 
-create table archived_employees like employees_table;
-alter table archived_employees add column archived_at timestamp default current_timestamp;
+ALTER TABLE `moderntech-hr-backend-project`.`payroll_table` 
+DROP FOREIGN KEY `fk_employee_id`;
+ALTER TABLE `moderntech-hr-backend-project`.`payroll_table` 
+CHANGE COLUMN `employee_id` `employee_id` INT NOT NULL ;
+ALTER TABLE `moderntech-hr-backend-project`.`payroll_table` 
+ADD CONSTRAINT `fk_employee_id`
+  FOREIGN KEY (`employee_id`)
+  REFERENCES `moderntech-hr-backend-project`.`employees_table` (`employees_id`)
+  ON DELETE CASCADE
+  ON UPDATE CASCADE;
+  
