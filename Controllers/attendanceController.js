@@ -118,8 +118,32 @@ const deleteAttendance = async (req, res) => {
     }
 };
 
+const getAttendanceStats = async (req, res) => {
+    try {
+        const cards =
+            await attendanceModel.getAttendanceStats();
+
+        const daily =
+            await attendanceModel.getDailyAttendanceStats();
+
+        res.json({
+            cards,
+            daily
+        });
+
+    } catch (error) {
+        console.error("Attendance stats error:", error);
+
+        res.status(500).json({
+            message: "Error loading attendance statistics",
+            error: error.message
+        });
+    }
+};
+
 
 module.exports = {
+    getAttendanceStats,
     getAttendance,
     getEmployeeAttendance,
     createAttendance,

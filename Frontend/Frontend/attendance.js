@@ -520,3 +520,228 @@ if (darkModeToggle) {
     });
 
 }
+
+
+
+
+
+/*=====================================
+    LOAD ATTENDANCE STATISTICS
+=====================================*/
+
+async function loadAttendanceStats() {
+    try {
+        const response = await fetch(
+            "http://localhost:3000/api/attendance/stats"
+        );
+
+        if (!response.ok) {
+            throw new Error("Could not load attendance statistics");
+        }
+
+        const data = await response.json();
+
+        displayAttendanceCards(data.cards);
+        displayAttendanceChart(data.daily);
+        displayDailyLog(data.daily);
+
+    } catch (error) {
+        console.error(
+            "Error loading attendance statistics:",
+            error
+        );
+    }
+}
+
+
+/*=====================================
+    DISPLAY CARDS
+=====================================*/
+
+function displayAttendanceCards(cards) {
+
+    const avgPresent =
+        document.getElementById("avgPresent");
+
+    const avgAbsent =
+        document.getElementById("avgAbsent");
+
+    const lateArrivals =
+        document.getElementById("lateArrivals");
+
+
+    if (avgPresent) {
+        avgPresent.textContent =
+            cards.avgPresent || 0;
+    }
+
+    if (avgAbsent) {
+        avgAbsent.textContent =
+            cards.avgAbsent || 0;
+    }
+
+    if (lateArrivals) {
+        lateArrivals.textContent =
+            cards.lateArrivals || 0;
+    }
+}
+
+
+/*=====================================
+    DISPLAY CHART
+=====================================*/
+
+function displayAttendanceChart(dailyData) {
+
+    const chart =
+        document.getElementById("attendanceChart");
+
+    if (!chart) {
+        return;
+    }
+
+    chart.innerHTML = "";
+
+
+    dailyData.forEach(day => {
+
+        const total =
+            Number(day.present) +
+            Number(day.absent) +
+            Number(day.late);
+
+        if (total === 0) {
+            return;
+        }
+
+
+        const presentHeight =
+            (Number(day.present) / total) * 100;
+
+        const absentHeight =
+            (Number(day.absent) / total) * 100;
+
+        const lateHeight =
+            (Number(day.late) / total) * 100;
+
+
+        chart.innerHTML += `
+
+            <div class="day">
+
+                <div class="bars">
+
+                    <div
+                        class="bar present"
+                        style="height: ${presentHeight}%"
+                    ></div>
+
+                    <div
+                        class="bar absent"
+                        style="height: ${absentHeight}%"
+                    ></div>
+
+                    <div
+                        class="bar late"
+                        style="height: ${lateHeight}%"
+                    ></div>
+
+                </div>
+
+                <p>${day.date}</p>
+
+            </div>
+
+        `;
+    });
+}
+
+
+/*=====================================
+    DISPLAY DAILY LOG
+=====================================*/
+
+function displayDailyLog(dailyData) {
+
+    const dailyLogBody =
+        document.getElementById("dailyLogBody");
+
+    if (!dailyLogBody) {
+        return;
+    }
+
+    dailyLogBody.innerHTML = "";
+
+
+    dailyData.forEach(day => {
+
+        const present =
+            Number(day.present);
+
+        const absent =
+            Number(day.absent);
+
+        const late =
+            Number(day.late);
+
+        const total =
+            present + absent + late;
+
+
+        const attendanceRate =
+            total > 0
+                ? (((present + late) / total) * 100)
+                    .toFixed(1)
+                : 0;
+
+
+        dailyLogBody.innerHTML += `
+
+            <tr class="att-tablerow1">
+
+                <td>${day.date}</td>
+
+                <td class="att-present">
+                    ${present}
+                </td>
+
+                <td class="att-absent">
+                    ${absent}
+                </td>
+
+                <td class="att-late">
+                    ${late}
+                </td>
+
+                <td>
+
+                    <div class="progress">
+
+                        <div
+                            class="fill"
+                            style="width: ${attendanceRate}%"
+                        ></div>
+
+                    </div>
+
+                    <span>
+                        ${attendanceRate}%
+                    </span>
+
+                </td>
+
+            </tr>
+
+        `;
+    });
+}
+
+
+/*=====================================
+    LOAD STATS WHEN PAGE OPENS
+=====================================*/
+
+document.addEventListener(
+    "DOMContentLoaded",
+    loadAttendanceStats
+);

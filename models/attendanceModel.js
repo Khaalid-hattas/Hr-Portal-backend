@@ -99,9 +99,56 @@ const deleteAttendance = async (id) => {
     return result;
 };
 
+const getAttendanceStats = async () => {
+    const [rows] = await db.query(`
+        SELECT
+            ROUND(AVG(present_count), 1) AS avgPresent,
+            ROUND(AVG(absent_count), 1) AS avgAbsent,
+            SUM(late_count) AS lateArrivals
+        FROM (
+            SELECT
+                date,
+
+                SUM(status = 'Present') AS present_count,
+
+                SUM(status = 'Absent') AS absent_count,
+
+                SUM(status = 'Late') AS late_count
+
+            FROM attendance
+            GROUP BY date
+        ) AS daily_stats
+    `);
+
+    return rows[0];
+};
+
+const getDailyAttendanceStats = async () => {
+    const [rows] = await db.query(`
+        SELECT
+            DATE_FORMAT(date, '%a %b %d') AS date,
+
+            SUM(status = 'Present') AS present,
+
+            SUM(status = 'Absent') AS absent,
+
+            SUM(status = 'Late') AS late
+
+        FROM attendance
+
+        GROUP BY date
+
+        ORDER BY date
+    `);
+
+    return rows;
+};
+
 
 // Export all model functions
 module.exports = {
+    getDailyAttendanceStats,
+    getAttendanceStats,
     getAttendance,
     getEmployeeAttendance,
     createAttendance,
