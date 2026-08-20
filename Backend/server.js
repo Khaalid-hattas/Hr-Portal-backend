@@ -7,6 +7,7 @@ import 'dotenv/config';
 import pool from './config/database.js';
 import DashboardRoutes from './routes/DashboardRoutes.js';
 import ReportsRoutes from './routes/ReportsRoutes.js';
+import leaveRoutes from './routes/leaveRoutes.js';
 
 const app = express();
 const __filename = fileURLToPath(import.meta.url);
@@ -39,6 +40,7 @@ app.get('/api/health', (req, res) => {
 
 app.use('/api/dashboard', DashboardRoutes);
 app.use('/api/reports', ReportsRoutes);
+app.use('/api/leave', leaveRoutes);
 
 app.use(express.static(frontendRoot));
 
