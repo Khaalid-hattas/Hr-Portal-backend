@@ -66,7 +66,7 @@
         <div class="main-body container-fluid p-4">
 
             <h1 class="fw-bold mb-1 header-title text-body">Dashboard</h1>
-            <p class="text-secondary fs-7 mb-4">Monday, 8 July 2024 — ModernTech Solutions HQ</p>
+            <p class="text-secondary fs-7 mb-4" id="currentDateLocation"></p>
 
             <div class="row g-3 mb-4">
                 <div class="col-6 col-md-3">
@@ -82,8 +82,8 @@
                                 </svg>
                             </span>
                         </div>
-                        <h2 class="fw-bold tracking-tight mb-1">250</h2>
-                        <p class="growth-text text-muted mb-0 small">+12 this quarter</p>
+                        <h2 id="totalEmployeesValue" class="fw-bold tracking-tight mb-1"></h2>
+                        <p id="totalEmployeesSubtext" class="growth-text text-muted mb-0 small"></p>
                     </div>
                 </div>
 
@@ -98,8 +98,8 @@
                                 </svg>
                             </span>
                         </div>
-                        <h2 class="fw-bold tracking-tight mb-1">R 1.91M</h2>
-                        <p class="growth-text text-muted mb-0 small">+1.8% vs last month</p>
+                        <h2 id="monthlyPayrollValue" class="fw-bold tracking-tight mb-1"></h2>
+                        <p id="monthlyPayrollSubtext" class="growth-text text-muted mb-0 small"></p>
                     </div>
                 </div>
 
@@ -116,8 +116,8 @@
                                 </svg>
                             </span>
                         </div>
-                        <h2 class="fw-bold tracking-tight mb-1">9</h2>
-                        <p class="growth-text text-muted mb-0 small">3 pending approval</p>
+                        <h2 id="openLeaveValue" class="fw-bold tracking-tight mb-1"></h2>
+                        <p id="openLeaveSubtext" class="growth-text text-muted mb-0 small"></p>
                     </div>
                 </div>
 
@@ -132,14 +132,14 @@
                                 </svg>
                             </span>
                         </div>
-                        <h2 class="fw-bold tracking-tight mb-1">96.2%</h2>
-                        <p class="growth-text text-muted mb-0 small">This week</p>
+                        <h2 id="attendanceValue" class="fw-bold tracking-tight mb-1"></h2>
+                        <p id="attendanceSubtext" class="growth-text text-muted mb-0 small"></p>
                     </div>
                 </div>
             </div>
 
             <div class="card-box mb-4 bg-white border rounded p-4">
-                <h5 class="fw-bold mb-3 section-heading">Weekly Attendance — July 2024</h5>
+                <h5 class="fw-bold mb-3 section-heading" id="attendanceChartTitle">Weekly Attendance</h5>
                 <div class="chart-container">
                     <canvas id="attendanceChart"></canvas>
                 </div>
@@ -154,38 +154,15 @@
                         </div>
                     </div>
                     <div class="col-12">
-                        <div class="list-group list-group-flush border-top-0">
-                            <div class="d-flex justify-content-between align-items-center py-2 border-bottom border-light">
-                                <span class="d-flex align-items-center gap-2"><span class="dot bg-indigo"></span> Engineering</span>
-                                <span class="fw-semibold">82</span>
-                            </div>
-                            <div class="d-flex justify-content-between align-items-center py-2 border-bottom border-light">
-                                <span class="d-flex align-items-center gap-2"><span class="dot bg-cyan"></span> Sales</span>
-                                <span class="fw-semibold">44</span>
-                            </div>
-                            <div class="d-flex justify-content-between align-items-center py-2 border-bottom border-light">
-                                <span class="d-flex align-items-center gap-2"><span class="dot bg-purple"></span> QA</span>
-                                <span class="fw-semibold">31</span>
-                            </div>
-                            <div class="d-flex justify-content-between align-items-center py-2 border-bottom border-light">
-                                <span class="d-flex align-items-center gap-2"><span class="dot bg-orange"></span> Support</span>
-                                <span class="fw-semibold">47</span>
-                            </div>
-                            <div class="d-flex justify-content-between align-items-center py-2 border-bottom border-light">
-                                <span class="d-flex align-items-center gap-2"><span class="dot bg-emerald"></span> Marketing</span>
-                                <span class="fw-semibold">28</span>
-                            </div>
-                            <div class="d-flex justify-content-between align-items-center py-2">
-                                <span class="d-flex align-items-center gap-2"><span class="dot bg-rose"></span> HR</span>
-                                <span class="fw-semibold">18</span>
-                            </div>
+                        <div id="departmentListContainer" class="list-group list-group-flush border-top-0">
+                            <!-- Populated dynamically via JS -->
                         </div>
                     </div>
                 </div>
             </div>
 
             <div class="card-box mb-4 bg-white border rounded p-4">
-                <h5 class="fw-bold mb-3 section-heading">Payroll Trend (R thousands)</h5>
+                <h5 class="fw-bold mb-3 section-heading" id="payrollChartTitle">Payroll Trend</h5>
                 <div class="chart-container">
                     <canvas id="payrollChart"></canvas>
                 </div>
@@ -193,50 +170,8 @@
 
             <div class="card-box mb-4 bg-white border rounded p-4">
                 <h5 class="fw-bold mb-4 section-heading">Recent Leave Requests</h5>
-                <div class="d-flex flex-column gap-3">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div class="d-flex align-items-center gap-3">
-                            <div class="avatar-circle avatar-lm">LM</div>
-                            <div>
-                                <h6 class="fw-bold mb-0 text-body">Lungile Moyo</h6>
-                                <small class="text-muted">Annual Leave · 5d</small>
-                            </div>
-                        </div>
-                        <span class="status-badge status-pending">Pending</span>
-                    </div>
-
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div class="d-flex align-items-center gap-3">
-                            <div class="avatar-circle avatar-kn">KN</div>
-                            <div>
-                                <h6 class="fw-bold mb-0 text-body">Keshav Naidoo</h6>
-                                <small class="text-muted">Sick Leave · 2d</small>
-                            </div>
-                        </div>
-                        <span class="status-badge status-approved">Approved</span>
-                    </div>
-
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div class="d-flex align-items-center gap-3">
-                            <div class="avatar-circle avatar-fp">FP</div>
-                            <div>
-                                <h6 class="fw-bold mb-0 text-body">Fatima Patel</h6>
-                                <small class="text-muted">Annual Leave · 7d</small>
-                            </div>
-                        </div>
-                        <span class="status-badge status-denied">Denied</span>
-                    </div>
-
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div class="d-flex align-items-center gap-3">
-                            <div class="avatar-circle avatar-kd">KD</div>
-                            <div>
-                                <h6 class="fw-bold mb-0 text-body">Karabo Dlamini</h6>
-                                <small class="text-muted">Medical Leave · 23d</small>
-                            </div>
-                        </div>
-                        <span class="status-badge status-approved">Approved</span>
-                    </div>
+                <div id="leaveRequestsContainer" class="d-flex flex-column gap-3">
+                    <!-- Populated dynamically via JS -->
                 </div>
             </div>
 
