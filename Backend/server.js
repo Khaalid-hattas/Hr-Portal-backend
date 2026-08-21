@@ -23,7 +23,8 @@ dotenv.config({ quiet: true });
 export const app = express();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const frontendRoot = path.resolve(__dirname, 'Frontend');
+// Frontend is next to Backend in the repository.
+const frontendRoot = path.resolve(__dirname, '../Frontend');
 
 // Middleware
 app.use(helmet());
