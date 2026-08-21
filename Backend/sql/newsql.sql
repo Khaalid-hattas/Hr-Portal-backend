@@ -519,6 +519,7 @@ CREATE TABLE IF NOT EXISTS users (
 );
 
 INSERT INTO users (id, username, password, role) 
-VALUES (1, 'ELijah_67', '$2b$10$9jDqYiuxV8R4cpNhuOxVreBasDnbjeCFafjNr3lDfxXqlZl23sxWO', 'employee');
+VALUES (1, 'ELijah_67', '$2b$10$9jDqYiuxV8R4cpNhuOxVreBasDnbjeCFafjNr3lDfxXqlZl23sxWO', 'employee'),
+       (2, 'Ty', 'Password123', 'employee');
 SET FOREIGN_KEY_CHECKS = 1;
 
