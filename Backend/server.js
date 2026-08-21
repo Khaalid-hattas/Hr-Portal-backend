@@ -6,8 +6,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 
 // Database configurations
-import pool from '../config/db.js';
-import { db } from './config/payroll_config.js';
+import pool from './config/db.js';
 
 // Route Imports
 import authRoutes from './routes/authRoutes.js';
