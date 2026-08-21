@@ -1,3 +1,4 @@
+SET FOREIGN_KEY_CHECKS = 0;
 CREATE DATABASE IF NOT EXISTS moderntech;
 USE moderntech;
 
@@ -28,7 +29,6 @@ VALUES
 
 
 
-USE moderntech;
 
 DROP TABLE IF EXISTS leave_requests;
 
@@ -70,7 +70,6 @@ VALUES
 
 
 
-USE moderntech;
 
 INSERT INTO attendance
 (employee_id, employee_name, date, status, check_in, check_out)
@@ -161,8 +160,6 @@ VALUES
 (4, 'Emily Jones', '2026-08-07', 'Absent', NULL, NULL),
 (5, 'David Wilson', '2026-08-07', 'Late', '08:35:00', '17:00:00');
 
-CREATE SCHEMA IF NOT EXISTS `moderntech` ;
-USE `moderntech` ;
 
 -- the employees_table
 CREATE TABLE `moderntech`.`employees_table` (
@@ -223,8 +220,6 @@ alter table employees_table add column `status` varchar(20) default 'active';
 create table archived_employees like employees_table;
 alter table archived_employees add column archived_at timestamp default current_timestamp;
 
-CREATE SCHEMA IF NOT EXISTS `moderntech` ;
-USE `moderntech` ;
 
 -- the employees_table
 CREATE TABLE `moderntech`.`employees_table` (
@@ -431,6 +426,99 @@ INSERT INTO time_off_requests (employee_id, leave_type, start_date, end_date, re
 (8, 'Sick Leave', '2026-02-01', '2026-02-02', 'Food poisoning', 'Approved');
 
 
-USE moderntech;
-SHOW TABLES;
+-- ============================================================
+-- Application seed data
+-- Uses the tables consumed by the current backend.
+-- Safe to run repeatedly: payroll and time-off rows are upserted.
+-- ============================================================
+
+
+INSERT INTO payroll_table
+    (employee_id, hours_worked, leave_deductions, final_salary)
+VALUES
+    (1, 160.00, 8, 69500.00),
+    (2, 150.00, 10, 79000.00),
+    (3, 170.00, 4, 54800.00),
+    (4, 165.00, 6, 59700.00),
+    (5, 158.00, 5, 57850.00),
+    (6, 168.00, 2, 64800.00),
+    (7, 175.00, 3, 71800.00),
+    (8, 160.00, 0, 56000.00),
+    (9, 155.00, 5, 61500.00),
+    (10, 162.00, 4, 57750.00)
+ON DUPLICATE KEY UPDATE
+    hours_worked = VALUES(hours_worked),
+    leave_deductions = VALUES(leave_deductions),
+    final_salary = VALUES(final_salary);
+
+INSERT INTO time_off_requests
+    (employee_id, leave_type, start_date, end_date, reason, status)
+VALUES
+    (1, 'Annual Leave', '2026-09-01', '2026-09-05', 'Family trip', 'Approved'),
+    (1, 'Sick Leave', '2026-03-12', '2026-03-14', 'Flu and fever', 'Approved'),
+    (2, 'Sick Leave', '2026-04-10', '2026-04-11', 'Dental emergency', 'Approved'),
+    (2, 'Annual Leave', '2026-12-20', '2027-01-05', 'Year-end holiday', 'Pending'),
+    (3, 'Study Leave', '2026-05-15', '2026-05-20', 'Final exam preparation', 'Approved'),
+    (4, 'Maternity Leave', '2026-06-01', '2026-08-31', 'Maternity leave', 'Approved'),
+    (5, 'Casual Leave', '2026-07-04', '2026-07-05', 'Personal business', 'Approved'),
+    (6, 'Unpaid Leave', '2026-08-10', '2026-08-12', 'Family emergency', 'Rejected'),
+    (7, 'Annual Leave', '2026-10-01', '2026-10-10', 'Vacation', 'Pending'),
+    (8, 'Sick Leave', '2026-02-01', '2026-02-02', 'Food poisoning', 'Approved');
+
+INSERT INTO leave_requests (employee_id, date, reason, status)
+SELECT seed.employee_id, seed.date, seed.reason, seed.status
+FROM (
+    SELECT 1 AS employee_id, '2025-07-22' AS date, 'Sick Leave' AS reason, 'Approved' AS status
+    UNION ALL SELECT 1, '2024-12-01', 'Personal', 'Pending'
+    UNION ALL SELECT 2, '2025-07-15', 'Family Responsibility', 'Denied'
+    UNION ALL SELECT 2, '2024-12-02', 'Vacation', 'Approved'
+    UNION ALL SELECT 3, '2025-07-10', 'Medical Appointment', 'Approved'
+    UNION ALL SELECT 3, '2024-12-05', 'Personal', 'Pending'
+    UNION ALL SELECT 4, '2025-07-20', 'Bereavement', 'Approved'
+    UNION ALL SELECT 5, '2024-12-01', 'Childcare', 'Pending'
+    UNION ALL SELECT 6, '2025-07-18', 'Sick Leave', 'Approved'
+    UNION ALL SELECT 7, '2025-07-22', 'Vacation', 'Pending'
+    UNION ALL SELECT 8, '2024-12-02', 'Medical Appointment', 'Approved'
+    UNION ALL SELECT 9, '2025-07-19', 'Childcare', 'Denied'
+    UNION ALL SELECT 10, '2024-12-03', 'Vacation', 'Pending'
+) AS seed
+WHERE NOT EXISTS (
+    SELECT 1
+    FROM leave_requests lr
+    WHERE lr.employee_id = seed.employee_id
+      AND lr.date = seed.date
+      AND lr.reason = seed.reason
+      AND lr.status = seed.status
+);
+
+
+
+SELECT COUNT(*) FROM payroll_table;
+SELECT COUNT(*) FROM time_off_requests;
+SELECT COUNT(*) FROM leave_requests;
+
+
+SELECT employee_id, COUNT(*) AS records
+FROM payroll_table
+GROUP BY employee_id
+ORDER BY employee_id;
+
+
+CREATE TABLE IF NOT EXISTS archived_employees LIKE employee_information;
+DESCRIBE archived_employees;
+
+ALTER TABLE archived_employees
+ADD COLUMN status VARCHAR(20) NOT NULL DEFAULT 'archived';
+
+
+CREATE TABLE IF NOT EXISTS users (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(100) NOT NULL UNIQUE,
+    password VARCHAR(255) NOT NULL,
+    role VARCHAR(50) NOT NULL DEFAULT 'employee'
+);
+
+INSERT INTO users (id, username, password, role) 
+VALUES (1, 'ELijah_67', '$2b$10$9jDqYiuxV8R4cpNhuOxVreBasDnbjeCFafjNr3lDfxXqlZl23sxWO', 'employee');
+SET FOREIGN_KEY_CHECKS = 1;
 
