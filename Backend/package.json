@@ -6,8 +6,8 @@
   "scripts": {
     "start": "node server.js",
     "dev": "nodemon server.js",
-    "build": "node scripts/check-syntax.mjs",
-    "lint": "node scripts/check-syntax.mjs",
+    "build": "node ./check-syntax.mjs",
+    "lint": "node ./scripts/check-syntax.mjs",
     "typecheck": "node --check server.js",
     "test": "node --test tests/server.test.mjs"
   },
