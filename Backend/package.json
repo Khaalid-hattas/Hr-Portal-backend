@@ -3,18 +3,18 @@
   "version": "1.0.0",
   "description": "ModernTech HR Portal backend",
   "main": "server.js",
+  "type": "module",
   "scripts": {
     "start": "node server.js",
     "dev": "nodemon server.js",
-    "build": "node ./check-syntax.mjs",
-    "lint": "node ./scripts/check-syntax.mjs",
+    "build": "node --check server.js",
+    "lint": "node --check server.js",
     "typecheck": "node --check server.js",
     "test": "node --test tests/server.test.mjs"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "type": "module",
   "dependencies": {
     "bcryptjs": "^3.0.3",
     "cors": "^2.8.6",
