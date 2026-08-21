@@ -20,7 +20,7 @@ async function loadAttendanceTable() {
 
         const attendanceResponse =
             await fetch(
-                "http://localhost:3000/api/attendance"
+                "https://app-2b50813e-61a2-41f7-beb4-a39824980e68.cleverapps.io/api/attendance"
             );
 
 
@@ -54,7 +54,7 @@ async function loadAttendanceTable() {
 
             const leaveResponse =
                 await fetch(
-                    "http://localhost:3000/api/leave"
+                    "https://app-2b50813e-61a2-41f7-beb4-a39824980e68.cleverapps.io/api/leave"
                 );
 
 
@@ -712,7 +712,7 @@ async function loadAttendanceStats() {
 
         const response =
             await fetch(
-                "http://localhost:3000/api/attendance/stats"
+                "https://app-2b50813e-61a2-41f7-beb4-a39824980e68.cleverapps.io/api/attendance/stats"
             );
 
 

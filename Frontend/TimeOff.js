@@ -59,7 +59,7 @@ async function loadTimeOffData() {
 
     try {
 
-        const response = await fetch("http://localhost:3000/api/leave");
+        const response = await fetch("https://app-2b50813e-61a2-41f7-beb4-a39824980e68.cleverapps.io/api/leave");
 
         if (!response.ok) {
             throw new Error(`API error: ${response.status} ${response.statusText}`);

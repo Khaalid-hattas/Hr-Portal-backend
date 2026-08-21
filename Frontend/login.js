@@ -16,7 +16,7 @@ loginForm.addEventListener("submit", async function (event) {
 
     try {
         const response = await fetch(
-            "http://localhost:3000/api/auth/login",
+            "https://app-2b50813e-61a2-41f7-beb4-a39824980e68.cleverapps.io/api/auth/login",
             {
                 method: "POST",
                 headers: {

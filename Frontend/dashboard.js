@@ -1,4 +1,4 @@
-const API_BASE_URL = "http://localhost:3000/api";
+const API_BASE_URL = "https://app-2b50813e-61a2-41f7-beb4-a39824980e68.cleverapps.io/api";
 
 function escapeHtml(value) {
   return String(value ?? '')
